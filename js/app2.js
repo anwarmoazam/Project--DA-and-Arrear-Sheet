@@ -30,6 +30,10 @@ const dataModule = (function () {
         },
         getData: function () {
             return data;
+        },
+        deleteData: function(index){
+            data.splice(index,1);
+            localStorage.setItem('data',JSON.stringify(data));
         }
     }
 })();
@@ -37,7 +41,7 @@ const dataModule = (function () {
 // Module for handling UI related tasks
 const uiModule = (function () {
     const tableBodyData = document.querySelector('tbody');
-
+    
     return {
         getDOM: function () {
             return {
@@ -49,16 +53,20 @@ const uiModule = (function () {
         },
         addRow: function (entry, index) {
             const row = document.createElement('tr');
+            row.id = `row-${index}`;
             row.innerHTML = `
-                <td>${index + 1}</td>
+                <td></td>
                 <td>${entry.name}</td>
                 <td>${entry.month}</td>
                 <td>${entry.days}</td>
                 <td>${entry.totalNPAAmount}</td>
-                <td>${entry.totalNPAAmount}</td>
-
+                <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
             `;
             tableBodyData.appendChild(row);
+        },
+        deleteRow: function(id){
+            const row = document.getElementById(id);
+            tableBodyData.removeChild(row);
         },
         populateTable: function () {
             const data = JSON.parse(localStorage.getItem('data')) || [];
@@ -72,10 +80,18 @@ const uiModule = (function () {
 // Main App Module for integrating different modules
 const appModule = (function (dataCtrl, uiCtrl) {
     uiCtrl.populateTable();
-    document.getElementById('input').addEventListener('submit', function (event) {
+    document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
         const newData = dataCtrl.saveData(inputData.name, inputData.salary, inputData.npa, inputData.date);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
+    document.querySelector('tbody').addEventListener('click',function(event){
+        if(event.target.classList.contains('delete-btn')){
+            const row = event.target.parentElement.parentElement;
+            const index = Array.from(row.parentElement.children).indexOf(row);
+            uiCtrl.deleteRow(event.target.dataset.id);
+            dataCtrl.deleteData(index);
+        }
+    })
 })(dataModule, uiModule);

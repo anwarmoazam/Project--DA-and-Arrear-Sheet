@@ -3,7 +3,7 @@ body{
     padding: 0;
 }
 
-#input{
+#form{
     width: auto;
     display: flex;
     flex-wrap: wrap;
@@ -33,3 +33,18 @@ table, th, td{
     justify-content: center;
     align-items: center;
 }
+
+table {
+    counter-reset: rowNumber;
+}
+
+tbody tr {
+    counter-increment: rowNumber;
+}
+
+tbody tr td:first-child::before {
+    content: counter(rowNumber);
+    min-width: 1em;
+    margin-right: 0.5em;
+}
+
