@@ -1,7 +1,7 @@
 // Module for handling data manipulation
 const dataModule = (function () {
     const npaRate = 20;
-    const data = [];
+    const data = JSON.parse(localStorage.getItem('data')) || [];
 
     function getDaysInMonth(month, year) {
         return new Date(year, month, 0).getDate();
@@ -27,6 +27,9 @@ const dataModule = (function () {
             data.push(obj);
             localStorage.setItem('data', JSON.stringify(data));
             return obj;
+        },
+        getData: function () {
+            return data;
         }
     }
 })();
@@ -44,20 +47,23 @@ const uiModule = (function () {
                 date: document.getElementById('date').value
             };
         },
-        addRow: function (entry) {
+        addRow: function (entry, index) {
             const row = document.createElement('tr');
             row.innerHTML = `
+                <td>${index + 1}</td>
                 <td>${entry.name}</td>
                 <td>${entry.month}</td>
                 <td>${entry.days}</td>
                 <td>${entry.totalNPAAmount}</td>
+                <td>${entry.totalNPAAmount}</td>
+
             `;
             tableBodyData.appendChild(row);
         },
         populateTable: function () {
             const data = JSON.parse(localStorage.getItem('data')) || [];
-            data.forEach(item => {
-                this.addRow(item)
+            data.forEach((item, index) => {
+                this.addRow(item, index);
             });
         }
     }
@@ -68,10 +74,8 @@ const appModule = (function (dataCtrl, uiCtrl) {
     uiCtrl.populateTable();
     document.getElementById('input').addEventListener('submit', function (event) {
         event.preventDefault();
-
         const inputData = uiCtrl.getDOM();
         const newData = dataCtrl.saveData(inputData.name, inputData.salary, inputData.npa, inputData.date);
-        console.log(newData);
-        uiCtrl.addRow(newData);
+        uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
 })(dataModule, uiModule);
