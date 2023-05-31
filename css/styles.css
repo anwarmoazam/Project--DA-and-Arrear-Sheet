@@ -3,17 +3,33 @@ body{
     padding: 0;
 }
 
-.input{
+#input{
     width: auto;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     padding: 50px 10px;
 }
 
 label{
-    margin: 0 10px;
+    margin: auto 10px;
 }
 
 #date{
     margin-right: 20px;
+}
+
+table, th, td{
+    border: 1px solid black;
+}
+
+#output{
+    width: 80%;
+    text-align: center;
+}
+
+.result{
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
