@@ -1,5 +1,5 @@
 // Module for handling data manipulation
-const dataModule = (function() {
+const dataModule = (function () {
     const npaRate = 20;
     const data = [];
 
@@ -13,7 +13,7 @@ const dataModule = (function() {
     }
 
     return {
-        saveData: function(name, salary, npa, dateValue) {
+        saveData: function (name, salary, npa, dateValue) {
             const obj = {};
             const date = new Date(dateValue);
             const totalDays = daysRemainingInMonth(date);
@@ -25,17 +25,18 @@ const dataModule = (function() {
             obj.days = totalDays;
             obj.month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
             data.push(obj);
+            localStorage.setItem('data', JSON.stringify(data));
             return obj;
         }
     }
 })();
 
 // Module for handling UI related tasks
-const uiModule = (function() {
+const uiModule = (function () {
     const tableBodyData = document.querySelector('tbody');
 
     return {
-        getDOM: function() {
+        getDOM: function () {
             return {
                 name: document.getElementById('name').value,
                 salary: document.getElementById('salary').value,
@@ -43,7 +44,7 @@ const uiModule = (function() {
                 date: document.getElementById('date').value
             };
         },
-        addRow: function(entry) {
+        addRow: function (entry) {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${entry.name}</td>
@@ -52,14 +53,22 @@ const uiModule = (function() {
                 <td>${entry.totalNPAAmount}</td>
             `;
             tableBodyData.appendChild(row);
+        },
+        populateTable: function () {
+            const data = JSON.parse(localStorage.getItem('data')) || [];
+            data.forEach(item => {
+                this.addRow(item)
+            });
         }
     }
 })();
 
 // Main App Module for integrating different modules
-const appModule = (function(dataCtrl, uiCtrl) {
+const appModule = (function (dataCtrl, uiCtrl) {
+    uiCtrl.populateTable();
     document.getElementById('input').addEventListener('submit', function (event) {
         event.preventDefault();
+
         const inputData = uiCtrl.getDOM();
         const newData = dataCtrl.saveData(inputData.name, inputData.salary, inputData.npa, inputData.date);
         console.log(newData);
