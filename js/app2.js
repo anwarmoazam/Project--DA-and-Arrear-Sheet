@@ -59,7 +59,9 @@ const uiModule = (function () {
                 <td>${entry.name}</td>
                 <td>${entry.month}</td>
                 <td>${entry.days}</td>
+                <td>${entry.salary}</td>
                 <td>${entry.totalNPAAmount}</td>
+                <td>${entry.salary+entry.totalNPAAmount}</td>
                 <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
             `;
             tableBodyData.appendChild(row);
