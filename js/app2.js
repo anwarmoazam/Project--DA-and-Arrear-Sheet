@@ -23,7 +23,7 @@ const dataModule = (function () {
             const npaAmountPerDay = ((obj.salary * npaRate / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             obj.totalNPAAmount = (obj.npa === 'yes') ? Math.round(totalDays * npaAmountPerDay) : 0;
             obj.days = totalDays;
-            obj.month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+            obj.month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date) + "/" + date.getFullYear();
             data.push(obj);
             localStorage.setItem('data', JSON.stringify(data));
             return obj;

@@ -24,12 +24,12 @@ table, th, td{
 }
 
 #output{
-    width: 80%;
+    width: 1000px;
     text-align: center;
 }
 
 .result{
-    display: flex;
+    display: grid;
     justify-content: center;
     align-items: center;
 }
