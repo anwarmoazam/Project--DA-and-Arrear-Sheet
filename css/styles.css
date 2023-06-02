@@ -3,12 +3,17 @@ body{
     padding: 0;
 }
 
+h1{
+    text-align: center;
+    color: green;
+}
+
 #form{
     width: auto;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    padding: 50px 10px;
+    padding-bottom: 20px;
 }
 
 label{
@@ -48,3 +53,6 @@ tbody tr td:first-child::before {
     margin-right: 0.5em;
 }
 
+#emp-name{
+    height: 30px;
+}

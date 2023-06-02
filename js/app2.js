@@ -53,10 +53,10 @@ const uiModule = (function () {
         },
         addRow: function (entry, index) {
             const row = document.createElement('tr');
+            document.getElementById('emp-name').innerText = `Name of Employee : ${entry.name}`;
             row.id = `row-${index}`;
             row.innerHTML = `
                 <td></td>
-                <td>${entry.name}</td>
                 <td>${entry.month}</td>
                 <td>${entry.days}</td>
                 <td>${entry.salary}</td>
@@ -73,6 +73,7 @@ const uiModule = (function () {
         populateTable: function () {
             const data = JSON.parse(localStorage.getItem('data')) || [];
             data.forEach((item, index) => {
+                console.log(item,index);
                 this.addRow(item, index);
             });
         }
