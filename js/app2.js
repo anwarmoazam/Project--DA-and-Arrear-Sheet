@@ -1,6 +1,7 @@
 // Module for handling data manipulation
 const dataModule = (function () {
     const npaRate = 20;
+    const daRate = [{date: new Date(30,06,2017),rate:4},{date: new Date(31,12,2017),rate:5},{date: new Date(28,02,2018),rate:7}];
     const data = JSON.parse(localStorage.getItem('data')) || [];
 
     function getDaysInMonth(month, year) {
