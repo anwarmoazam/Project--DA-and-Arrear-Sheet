@@ -21,7 +21,9 @@ const dataModule = (function () {
             obj.salary = Number(salary);
             obj.npa = npa;
             obj.washing = washing;
+            obj.salary = salary;
             const npaAmountPerDay = ((obj.salary * npaRate / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            const basicSalaryPerDay = (salary / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             const washingAllowancePerDay = (150 / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             obj.washingAllowance = washing;
             let daAmountPerDay;
@@ -46,6 +48,7 @@ const dataModule = (function () {
             } else if (date >= new Date(2023, 00, 01) && date <= new Date(2023, 05, 30)) {
                 daAmountPerDay = ((obj.salary * 42 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             }
+            obj.salary = Math.round(totalDays * basicSalaryPerDay);
             obj.totalNPAAmount = (obj.npa === 'yes') ? Math.round(totalDays * npaAmountPerDay) : 0;
             obj.washingAllowance = (obj.washing === 'yes') ? Math.round(totalDays * washingAllowancePerDay) : 0
             obj.daAmount = Math.round(totalDays * daAmountPerDay);
