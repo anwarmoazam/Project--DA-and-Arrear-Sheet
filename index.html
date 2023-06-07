@@ -21,6 +21,11 @@
             <option value="yes">Yes</option>
             <option value="no">No</option>
         </select>
+        <label for="npa">Washing Allowance : </label>
+        <select name="washing" id="washing" required>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+        </select>
         <label for="date">Select Date : </label>
         <input type="date" name="date" id="date" required>
         <input type="submit" value="Submit">
@@ -29,7 +34,7 @@
         <table id="output">
             <tHead>
                 <tr>
-                    <th colspan="7" id="emp-name">Name of Employee : </th>
+                    <th colspan="10" id="emp-name">Name of Employee : </th>
                 </tr>
                 <tr>
                     <th>S.No.</th>
@@ -38,6 +43,8 @@
                     <th>Days</th>
                     <th>Basic Salary</th>
                     <th>NPA Amount</th>
+                    <th>Washing Allowance</th>
+                    <th>DA Amount</th>
                     <th>Total</th>
                     <th>Actions</th>
                 </tr>
