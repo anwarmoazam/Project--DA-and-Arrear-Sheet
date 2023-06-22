@@ -53,10 +53,6 @@ const dataModule = (function () {
             const totalDays = daysRemainingInMonth(date);
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
             console.log(totalData);
-            for (let month of totalData) {
-                console.log(month.monthAndYear);
-                console.log(month.days);
-            }
             obj.name = name.trim();
             obj.designation = designation.trim();
             obj.empId = empId.trim();
@@ -82,14 +78,16 @@ const dataModule = (function () {
                 totalAmt : 30000
             }],*/
             for (let month of totalData) {
-                let obj = {};
-                obj.month = month.monthAndYear;
-                obj.days = month.days;
-                obj.basicAmt = Math.round(this.days * basicSalaryPerDay);
-                obj.npaAmt = (this.npa === 'yes') ? Math.round(this.days * npaAmountPerDay) : 0;
-                obj.washingAmt = (this.washing === 'yes') ? Math.round(this.days * washingAllowancePerDay) : 0;
-                obj.totalPaid = this.basicAmt + this.npaAmt + this.washingAmt;
-                paid.push(obj);
+                let paidObj = {};
+                paidObj.month = month.monthAndYear;
+                paidObj.days = month.days;
+                const basicSalaryPerDay = (Number(salary) / paidObj.days).toFixed(2);
+                paidObj.basicAmt = Math.round(paidObj.days * Number(basicSalaryPerDay));
+                console.log(paidObj.days * basicSalaryPerDay);
+                paidObj.npaAmt = (this.npa === 'yes') ? Math.round(this.days * npaAmountPerDay) : 0;
+                paidObj.washingAmt = (this.washing === 'yes') ? Math.round(this.days * washingAllowancePerDay) : 0;
+                paidObj.totalPaid = this.basicAmt + this.npaAmt + this.washingAmt;
+                paid.push(paidObj);
             }
             obj.arear.paid = paid;
             obj.washingAllowance = washing;
