@@ -27,7 +27,7 @@ const dataModule = (function () {
             const washingAllowancePerDay = (150 / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             obj.washingAllowance = washing;
             let daAmountPerDay;
-            if (date >= new Date(2017, 00, 01) && date <= new Date(2017, 05, 30)) {
+            if (date >= new Date(2017, 0, 1) && date <= new Date(2017, 5, 30)) {
                 daAmountPerDay = ((obj.salary * 4 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
             } else if (date >= new Date(2017, 06, 01) && date <= new Date(2017, 11, 31)) {
                 daAmountPerDay = ((obj.salary * 5 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
