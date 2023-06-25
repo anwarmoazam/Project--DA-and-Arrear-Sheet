@@ -1,7 +1,7 @@
 // Module for handling data manipulation
 const dataModule = (function () {
     const npaRate = 20;
-    const da = {}
+    const daRate = {}
     const data = JSON.parse(localStorage.getItem('data')) || {};
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -15,6 +15,34 @@ const dataModule = (function () {
         return endDate.getDate() - (date.getDate() - 1);
     }
 
+    function getArrearRate(date) {
+        let daRate = 0;
+        date = new Date(date);
+        console.log(date);
+        if (date >= new Date(2017, 0, 1) && date <= new Date(2017, 5, 30)) {
+            daRate = 4;
+        } else if (date >= new Date(2017, 6, 1) && date <= new Date(2017, 11, 31)) {
+            daRate = 5;
+        } else if (date >= new Date(2018, 0, 1) && date <= new Date(2018, 5, 30)) {
+            daRate = 7;
+        } else if (date >= new Date(2018, 6, 1) && date <= new Date(2018, 11, 31)) {
+            daRate = 9;
+        } else if (date >= new Date(2019, 0, 1) && date <= new Date(2019, 5, 30)) {
+            daRate = 12;
+        } else if (date >= new Date(2019, 6, 1) && date <= new Date(2021, 5, 30)) {
+            daRate = 17;
+        } else if (date >= new Date(2021, 6, 1) && date <= new Date(2021, 11, 31)) {
+            daRate = 31;
+        } else if (date >= new Date(2022, 0, 1) && date <= new Date(2022, 5, 30)) {
+            daRate = 34;
+        } else if (date >= new Date(2022, 6, 1) && date <= new Date(2022, 11, 31)) {
+            daRate = 38;
+        } else if (date >= new Date(2023, 0, 1) && date <= new Date(2023, 5, 30)) {
+            daRate = 42;
+        }
+        return daRate;
+    }
+
     function getCurrentMonthAndYear(startDate, endDate) {
         let years = (new Date(endDate).getFullYear() - new Date(startDate).getFullYear());
         let months = (new Date(endDate).getMonth() - new Date(startDate).getMonth()) + (years * 12) + 1;
@@ -26,21 +54,25 @@ const dataModule = (function () {
         for (let i = 0; i < months; i++) {
             let currentMonthAndYear = {};
             if (i === 0) {
+                currentMonthAndYear.date = new Date(startDate).getDate();
                 currentMonthAndYear.month = currentMonth;
                 currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = daysRemainingInMonth(new Date(startDate));
                 currentMonth++;
             } else if (i === months - 1) {
+                currentMonthAndYear.date = new Date(endDate).getDate();
                 currentMonthAndYear.month = currentMonth;
                 currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = new Date(endDate).getDate();
             } else if (currentMonth === 12) {
+                currentMonthAndYear.date = 1;
                 currentMonthAndYear.month = currentMonth;
                 currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = getDaysInMonth(currentMonth, currentYear);
                 currentYear++;
                 currentMonth = 1;
             } else {
+                currentMonthAndYear.date = 1;
                 currentMonthAndYear.month = currentMonth;
                 currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = getDaysInMonth(currentMonth, currentYear);
@@ -71,6 +103,8 @@ const dataModule = (function () {
                 const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
                 const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
                 const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
+                const date = month.year+","+month.month+","+1;
+                console.log('Date : ',date);
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
@@ -109,6 +143,7 @@ const dataModule = (function () {
             return data;
         },
         getData: function () {
+            console.log('Data in getData : ', data);
             return data;
         },
         deleteData: function (index) {
@@ -230,3 +265,4 @@ let obj = {
     }
 }
 */
+
