@@ -2,7 +2,9 @@
 const dataModule = (function () {
     const npaRate = 20;
     const da = {}
-    const data = JSON.parse(localStorage.getItem('data')) || [];
+    const data = JSON.parse(localStorage.getItem('data')) || {};
+    const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 
     function getDaysInMonth(month, year) {
         return new Date(year, month, 0).getDate();
@@ -16,7 +18,6 @@ const dataModule = (function () {
     function getCurrentMonthAndYear(startDate, endDate) {
         let years = (new Date(endDate).getFullYear() - new Date(startDate).getFullYear());
         let months = (new Date(endDate).getMonth() - new Date(startDate).getMonth()) + (years * 12) + 1;
-        const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
         let currentMonth = new Date(startDate).getMonth() + 1;
         let currentYear = new Date(startDate).getFullYear();
@@ -25,19 +26,23 @@ const dataModule = (function () {
         for (let i = 0; i < months; i++) {
             let currentMonthAndYear = {};
             if (i === 0) {
-                currentMonthAndYear.monthAndYear = monthsName[currentMonth] + "/" + currentYear;
+                currentMonthAndYear.month = currentMonth;
+                currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = daysRemainingInMonth(new Date(startDate));
                 currentMonth++;
             } else if (i === months - 1) {
-                currentMonthAndYear.monthAndYear = monthsName[currentMonth] + "/" + currentYear;
+                currentMonthAndYear.month = currentMonth;
+                currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = new Date(endDate).getDate();
             } else if (currentMonth === 12) {
-                currentMonthAndYear.monthAndYear = monthsName[currentMonth] + "/" + currentYear;
+                currentMonthAndYear.month = currentMonth;
+                currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = getDaysInMonth(currentMonth, currentYear);
                 currentYear++;
                 currentMonth = 1;
             } else {
-                currentMonthAndYear.monthAndYear = monthsName[currentMonth] + "/" + currentYear;
+                currentMonthAndYear.month = currentMonth;
+                currentMonthAndYear.year = currentYear;
                 currentMonthAndYear.days = getDaysInMonth(currentMonth, currentYear);
                 currentMonth++;
             }
@@ -48,82 +53,60 @@ const dataModule = (function () {
 
     return {
         saveData: function (name, designation, empId, salary, npa, washing, fromDate, toDate) {
-            const obj = {};
             const date = new Date(fromDate);
-            const totalDays = daysRemainingInMonth(date);
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
             console.log(totalData);
-            obj.name = name.trim();
-            obj.designation = designation.trim();
-            obj.empId = empId.trim();
-            obj.salary = Number(salary);
-            obj.npa = npa;
-            obj.washing = washing;
-            obj.fromDate = fromDate;
-            obj.toDate = toDate;
-            obj.salary = salary;
-            obj.arear = {};
+            data.name = name.trim();
+            data.designation = designation.trim();
+            data.empId = empId.trim();
+            data.salary = salary;
+            data.npaAllowance = npa;
+            data.washingAllowance = washing;
+            data.fromDate = fromDate;
+            data.toDate = toDate;
+            data.salary = salary;
+            data.arear = {};
             let paid = [];
-            const npaAmountPerDay = ((obj.salary * npaRate / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            const basicSalaryPerDay = (salary / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            const washingAllowancePerDay = (150 / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            /*
-            paid : [{
-                month : 'January/2017',
-                days : 29,
-                basicAmt : 25000,
-                npaAmt : 1000,
-                washingAmt : 100,
-                daAmt : 5000,
-                totalAmt : 30000
-            }],*/
             for (let month of totalData) {
-                let paidObj = {};
-                paidObj.month = month.monthAndYear;
-                paidObj.days = month.days;
-                const basicSalaryPerDay = (Number(salary) / paidObj.days).toFixed(2);
-                paidObj.basicAmt = Math.round(paidObj.days * Number(basicSalaryPerDay));
-                console.log(paidObj.days * basicSalaryPerDay);
-                paidObj.npaAmt = (this.npa === 'yes') ? Math.round(this.days * npaAmountPerDay) : 0;
-                paidObj.washingAmt = (this.washing === 'yes') ? Math.round(this.days * washingAllowancePerDay) : 0;
-                paidObj.totalPaid = this.basicAmt + this.npaAmt + this.washingAmt;
-                paid.push(paidObj);
+                const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
+                const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
+                const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
+                month.basicSalary = Math.round(basicSalaryPerDay * month.days);
+                data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
+                data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
+                month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
+                console.log(month);
+                paid.push(month);
             }
-            obj.arear.paid = paid;
-            obj.washingAllowance = washing;
-            let daAmountPerDay;
-            if (date >= new Date(2017, 00, 01) && date <= new Date(2017, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 4 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2017, 06, 01) && date <= new Date(2017, 11, 31)) {
-                daAmountPerDay = ((obj.salary * 5 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2018, 00, 01) && date <= new Date(2018, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 7 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2018, 06, 01) && date <= new Date(2018, 11, 31)) {
-                daAmountPerDay = ((obj.salary * 9 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2019, 00, 01) && date <= new Date(2019, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 12 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2019, 06, 01) && date <= new Date(2021, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 17 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2021, 06, 01) && date <= new Date(2021, 11, 31)) {
-                daAmountPerDay = ((obj.salary * 31 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2022, 00, 01) && date <= new Date(2022, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 34 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2022, 06, 01) && date <= new Date(2022, 11, 31)) {
-                daAmountPerDay = ((obj.salary * 38 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            } else if (date >= new Date(2023, 00, 01) && date <= new Date(2023, 05, 30)) {
-                daAmountPerDay = ((obj.salary * 42 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            }
-            // obj.salary = Math.round(totalDays * basicSalaryPerDay);
-            // obj.totalNPAAmount = (obj.npa === 'yes') ? Math.round(totalDays * npaAmountPerDay) : 0;
-            obj.washingAllowance = (obj.washing === 'yes') ? Math.round(totalDays * washingAllowancePerDay) : 0
-            obj.daAmount = Math.round(totalDays * daAmountPerDay);
-            obj.days = totalDays;
-            // obj.month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date) + "/" + date.getFullYear();
-            // obj.month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date) + "/" + date.getFullYear();
-            data.push(obj);
+            data.arear.paid = paid;
+
+
+            // let daAmountPerDay;
+            // if (date >= new Date(2017, 00, 01) && date <= new Date(2017, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 4 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2017, 06, 01) && date <= new Date(2017, 11, 31)) {
+            //     daAmountPerDay = ((obj.salary * 5 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2018, 00, 01) && date <= new Date(2018, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 7 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2018, 06, 01) && date <= new Date(2018, 11, 31)) {
+            //     daAmountPerDay = ((obj.salary * 9 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2019, 00, 01) && date <= new Date(2019, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 12 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2019, 06, 01) && date <= new Date(2021, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 17 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2021, 06, 01) && date <= new Date(2021, 11, 31)) {
+            //     daAmountPerDay = ((obj.salary * 31 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2022, 00, 01) && date <= new Date(2022, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 34 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2022, 06, 01) && date <= new Date(2022, 11, 31)) {
+            //     daAmountPerDay = ((obj.salary * 38 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // } else if (date >= new Date(2023, 00, 01) && date <= new Date(2023, 05, 30)) {
+            //     daAmountPerDay = ((obj.salary * 42 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
+            // }
+
             localStorage.setItem('data', JSON.stringify(data));
-            console.log(obj);
-            return obj;
+            console.log(data);
+            return data;
         },
         getData: function () {
             return data;
@@ -145,7 +128,7 @@ const uiModule = (function () {
                 name: document.getElementById('name').value,
                 designation: document.getElementById('designation').value,
                 empId: document.getElementById('empId').value,
-                salary: document.getElementById('salary').value,
+                salary: Number(document.getElementById('salary').value),
                 npa: document.getElementById('npa').value,
                 washing: document.getElementById('washing').value,
                 fromDate: document.getElementById('fromDate').value,
@@ -174,16 +157,14 @@ const uiModule = (function () {
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
-            const data = JSON.parse(localStorage.getItem('data')) || [];
-            data.forEach((item, index) => {
-                console.log(item, index);
-                this.addRow(item, index);
-            });
+            const data = JSON.parse(localStorage.getItem('data')) || {};
+            // data.forEach((item, index) => {
+            //     console.log(item, index);
+            //     this.addRow(item, index);
+            // });
         }
     }
 })();
-
-console.log(uiModule.getDOM());
 
 // Main App Module for integrating different modules
 const appModule = (function (dataCtrl, uiCtrl) {
