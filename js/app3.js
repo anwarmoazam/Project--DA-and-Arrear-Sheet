@@ -100,7 +100,7 @@ const dataModule = (function () {
                 const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
                 const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
                 const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
-                const date = month.year+","+month.month+","+1;
+                const date = month.year + "," + month.month + "," + 1;
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
@@ -125,7 +125,12 @@ const dataModule = (function () {
 
 // Module for handling UI related tasks
 const uiModule = (function () {
+    const tableHeadData = document.querySelector('tHead');
     const tableBodyData = document.querySelector('tbody');
+
+    function getTableData(obj){
+        const row = document.createElement('tr');
+    }
 
     return {
         getDOM: function () {
@@ -140,27 +145,48 @@ const uiModule = (function () {
                 toDate: document.getElementById('toDate').value,
             };
         },
-        addRow: function (entry, index) {
-            console.log('entry : ',entry);
-            const row = document.createElement('tr');
-            document.getElementById('emp-detail').innerText = `Name of Employee : ${entry.name} | Designation : ${entry.designation} | Employee ID : ${entry.empId}`;
-            for(let rowData of entry.arear.paid){
-                console.log(row,rowData.index);
-                row.id = `row-${index}`;
-                row.innerHTML = `
-                <td></td>
-                <td>${rowData.month} / ${rowData.year}</td>
-                <td>${entry.days}</td>
-                <td><input type="number" placeholder=${entry.salary}></td>
-                <td>${entry.totalNPAAmount}</td>
-                <td>${entry.washingAllowance}</td>
-                <td>${entry.daAmount}</td>
-                <td>${entry.salary + entry.daAmount + entry.totalNPAAmount + entry.washingAllowance}</td>
-                <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
-                `;
+        addRow: function (entry,index) {
+            console.log(entry);
+            const tableHeading = document.createElement('tr');
+            let heading = "";
+            if (entry.npaAllowance === 'yes' && entry.washingAllowance === 'no') {
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>NPA Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+                let tableData = getTableData(entry.arear.paid);
+            } else if (entry.washingAllowance === 'yes' && entry.npaAllowance === 'no') {
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>Washing Allowance Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            } else if (entry.npaAllowance === 'yes' && entry.washingAllowance === 'yes') {
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>NPA Amount</th><th>Washing Allowance Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            } else {
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
             }
-            tableBodyData.appendChild(row);
+            tableHeadData.appendChild(tableHeading);
+            console.log(tableHeading.childNodes);
         },
+        // addRow: function (entry, index) {
+        //     const row = document.createElement('tr');
+
+        //     // document.getElementById('emp-detail').innerText = `Name of Employee : ${entry.name} | Designation : ${entry.designation} | Employee ID : ${entry.empId}`;
+        //     for (let rowData of entry.arear.paid) {
+        //         console.log(row, rowData.index);
+        //         row.id = `row-${index}`;
+        //         row.innerHTML = `
+        //         <td></td>
+        //         <td>${rowData.month} / ${rowData.year}</td>
+        //         <td>${entry.days}</td>
+        //         <td><input type="number" placeholder=${entry.salary}></td>
+        //         <td>${entry.totalNPAAmount}</td>
+        //         <td>${entry.washingAllowance}</td>
+        //         <td>${entry.daAmount}</td>
+        //         <td>${entry.salary + entry.daAmount + entry.totalNPAAmount + entry.washingAllowance}</td>
+        //         <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
+        //         `;
+        //     }
+        //     tableBodyData.appendChild(row);
+        // },
         deleteRow: function (id) {
             const row = document.getElementById(id);
             tableBodyData.removeChild(row);
@@ -183,6 +209,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
         const inputData = uiCtrl.getDOM();
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
         console.log(newData);
+        // uiCtrl.addHeading(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
