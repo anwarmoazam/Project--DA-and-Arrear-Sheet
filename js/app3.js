@@ -18,7 +18,6 @@ const dataModule = (function () {
     function getArrearRate(date) {
         let daRate = 0;
         date = new Date(date);
-        console.log(date);
         if (date >= new Date(2017, 0, 1) && date <= new Date(2017, 5, 30)) {
             daRate = 4;
         } else if (date >= new Date(2017, 6, 1) && date <= new Date(2017, 11, 31)) {
@@ -85,9 +84,7 @@ const dataModule = (function () {
 
     return {
         saveData: function (name, designation, empId, salary, npa, washing, fromDate, toDate) {
-            const date = new Date(fromDate);
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
-            console.log(totalData);
             data.name = name.trim();
             data.designation = designation.trim();
             data.empId = empId.trim();
@@ -104,46 +101,19 @@ const dataModule = (function () {
                 const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
                 const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
                 const date = month.year+","+month.month+","+1;
-                console.log('Date : ',date);
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
                 month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
-                console.log(month);
+                month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
                 paid.push(month);
             }
             data.arear.paid = paid;
 
-
-            // let daAmountPerDay;
-            // if (date >= new Date(2017, 00, 01) && date <= new Date(2017, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 4 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2017, 06, 01) && date <= new Date(2017, 11, 31)) {
-            //     daAmountPerDay = ((obj.salary * 5 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2018, 00, 01) && date <= new Date(2018, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 7 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2018, 06, 01) && date <= new Date(2018, 11, 31)) {
-            //     daAmountPerDay = ((obj.salary * 9 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2019, 00, 01) && date <= new Date(2019, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 12 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2019, 06, 01) && date <= new Date(2021, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 17 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2021, 06, 01) && date <= new Date(2021, 11, 31)) {
-            //     daAmountPerDay = ((obj.salary * 31 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2022, 00, 01) && date <= new Date(2022, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 34 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2022, 06, 01) && date <= new Date(2022, 11, 31)) {
-            //     daAmountPerDay = ((obj.salary * 38 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // } else if (date >= new Date(2023, 00, 01) && date <= new Date(2023, 05, 30)) {
-            //     daAmountPerDay = ((obj.salary * 42 / 100) / getDaysInMonth(date.getMonth() + 1, date.getFullYear())).toFixed(2);
-            // }
-
             localStorage.setItem('data', JSON.stringify(data));
-            console.log(data);
             return data;
         },
         getData: function () {
-            console.log('Data in getData : ', data);
             return data;
         },
         deleteData: function (index) {
@@ -171,20 +141,24 @@ const uiModule = (function () {
             };
         },
         addRow: function (entry, index) {
+            console.log('entry : ',entry);
             const row = document.createElement('tr');
-            document.getElementById('name').innerText = `Name of Employee : ${entry.name}`;
-            row.id = `row-${index}`;
-            row.innerHTML = `
-            <td></td>
-            <td>${entry.month}</td>
-            <td>${entry.days}</td>
-            <td><input type="number">${entry.salary}</td>
-            <td>${entry.totalNPAAmount}</td>
-            <td>${entry.washingAllowance}</td>
-            <td>${entry.daAmount}</td>
-            <td>${entry.salary + entry.daAmount + entry.totalNPAAmount + entry.washingAllowance}</td>
-            <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
-            `;
+            document.getElementById('emp-detail').innerText = `Name of Employee : ${entry.name} | Designation : ${entry.designation} | Employee ID : ${entry.empId}`;
+            for(let rowData of entry.arear.paid){
+                console.log(row,rowData.index);
+                row.id = `row-${index}`;
+                row.innerHTML = `
+                <td></td>
+                <td>${rowData.month} / ${rowData.year}</td>
+                <td>${entry.days}</td>
+                <td><input type="number" placeholder=${entry.salary}></td>
+                <td>${entry.totalNPAAmount}</td>
+                <td>${entry.washingAllowance}</td>
+                <td>${entry.daAmount}</td>
+                <td>${entry.salary + entry.daAmount + entry.totalNPAAmount + entry.washingAllowance}</td>
+                <td><button class="delete-btn" data-id="${row.id}">Delete</button></td>
+                `;
+            }
             tableBodyData.appendChild(row);
         },
         deleteRow: function (id) {
@@ -207,7 +181,6 @@ const appModule = (function (dataCtrl, uiCtrl) {
     document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
-        console.log(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
         console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
