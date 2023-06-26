@@ -3,7 +3,6 @@ const dataModule = (function () {
     const npaRate = 20;
     const daRate = {}
     const data = JSON.parse(localStorage.getItem('data')) || {};
-    const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 
     function getDaysInMonth(month, year) {
@@ -127,8 +126,9 @@ const dataModule = (function () {
 const uiModule = (function () {
     const tableHeadData = document.querySelector('tHead');
     const tableBodyData = document.querySelector('tbody');
+    const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    function getTableData(obj){
+    function getTableData(obj) {
         const row = document.createElement('tr');
     }
 
@@ -145,8 +145,7 @@ const uiModule = (function () {
                 toDate: document.getElementById('toDate').value,
             };
         },
-        addRow: function (entry,index) {
-            console.log(entry);
+        addRow: function (entry) {
             const tableHeading = document.createElement('tr');
             let heading = "";
             if (entry.npaAllowance === 'yes' && entry.washingAllowance === 'no') {
@@ -164,7 +163,28 @@ const uiModule = (function () {
                 tableHeading.innerHTML = heading;
             }
             tableHeadData.appendChild(tableHeading);
-            console.log(tableHeading.childNodes);
+            let columnLength = tableHeading.childNodes.length;
+            let index = 1;
+            console.log('length : ', columnLength);
+            for (let rowData of entry.arear.paid) {
+                const row = document.createElement('tr');
+                console.log(rowData, rowData.index);
+                const {npaAmount,washingAmount} = rowData;
+                row.id = `row-${index}`;
+                row.innerHTML = `
+                    <td></td>
+                    <td>${monthsName[rowData.month]} / ${rowData.year}</td>
+                    <td>${rowData.days}</td>
+                    <td><input type="number" placeholder=${rowData.basicSalary}></td>
+                    ${rowData.npaAmount ? "<td></td>":""}
+                    ${rowData.washingAllowance ? '<td></td>':''}
+                    <td>${rowData.daAmount}</td>
+                    <td>${rowData.basicSalary + rowData.daAmount || 0 + rowData.npaAmount || 0 + rowData.washingAmount || 0}</td>
+                    <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
+                tableBodyData.appendChild(row);
+                index++;
+            }
+            console.log(tableBodyData);
         },
         // addRow: function (entry, index) {
         //     const row = document.createElement('tr');
@@ -189,6 +209,7 @@ const uiModule = (function () {
         // },
         deleteRow: function (id) {
             const row = document.getElementById(id);
+            console.log(row);
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
@@ -208,8 +229,6 @@ const appModule = (function (dataCtrl, uiCtrl) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
-        console.log(newData);
-        // uiCtrl.addHeading(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
@@ -217,7 +236,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const row = event.target.parentElement.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             uiCtrl.deleteRow(event.target.dataset.id);
-            dataCtrl.deleteData(index);
+            // dataCtrl.deleteData(index);
         }
     })
 })(dataModule, uiModule);
