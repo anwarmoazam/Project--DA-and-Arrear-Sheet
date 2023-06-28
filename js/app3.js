@@ -100,12 +100,20 @@ const dataModule = (function () {
                 const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
                 const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
                 const date = month.year + "," + month.month + "," + 1;
+                let surrender = {};
+                console.log(month);
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
                 month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
                 data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
                 toBePaid.push(month);
+                if(month.month === 3){
+                    surrender = {...month};
+                    surrender.washingAmount ? delete surrender.washingAmount : 0;
+                    toBePaid.push(surrender);
+                    console.log(surrender)
+                }
             }
             data.arear.toBePaid = toBePaid;
             alreadyPaid = [...toBePaid];
@@ -121,8 +129,8 @@ const dataModule = (function () {
             data.splice(index, 1);
             localStorage.setItem('data', JSON.stringify(data));
         },
-        updateData: function(index){
-            
+        updateData: function (index) {
+
         }
     }
 })();
