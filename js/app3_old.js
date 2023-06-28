@@ -1,7 +1,6 @@
 // Module for handling data manipulation
 const dataModule = (function () {
     const npaRate = 20;
-    const daRate = {}
     const data = JSON.parse(localStorage.getItem('data')) || {};
 
 
@@ -94,7 +93,7 @@ const dataModule = (function () {
             data.toDate = toDate;
             data.salary = salary;
             data.arear = {};
-            let toBePaid = [], alreadyPaid = [];
+            let paid = [];
             for (let month of totalData) {
                 const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
                 const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
@@ -104,25 +103,23 @@ const dataModule = (function () {
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
                 month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
-                data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
-                toBePaid.push(month);
+                month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
+                paid.push(month);
             }
-            data.arear.toBePaid = toBePaid;
-            alreadyPaid = [...toBePaid];
-            data.arear.alreadyPaid = alreadyPaid;
+            data.arear.paid = paid;
 
             localStorage.setItem('data', JSON.stringify(data));
+            console.log('Data from saveData : ', data);
+
             return data;
         },
         getData: function () {
+            console.log('Data from getData : ', data);
             return data;
         },
         deleteData: function (index) {
             data.splice(index, 1);
             localStorage.setItem('data', JSON.stringify(data));
-        },
-        updateData: function(index){
-            
         }
     }
 })();
@@ -130,15 +127,9 @@ const dataModule = (function () {
 // Module for handling UI related tasks
 const uiModule = (function () {
     const table = document.getElementById('output');
-    const employeeDetail = document.getElementById('emp-detail');
     const tableHeadData = document.querySelector('tHead');
     const tableBodyData = document.querySelector('tbody');
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-    function createHeading(headingValue) {
-        console.log(headingValue);
-        return `<tr><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="14"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="12"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' ? `colspan="10"` : ''}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId}</th></tr><tr><th rowspan="2">S.No.</th><th rowspan="2">Month/Year</th><th rowspan="2">Days</th><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="5"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' ? `colspan="4"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="4"` : `colspan="3"`}>Pay to be Drawn</th><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="5"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' ? `colspan="4"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="4"` : `colspan="3"`}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr><tr><th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th><th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th></tr>`;
-    }
 
     return {
         getDOM: function () {
@@ -153,54 +144,82 @@ const uiModule = (function () {
                 toDate: document.getElementById('toDate').value,
             };
         },
-        addRow: function (entry) {
-            table.innerHTML = "";
-            tableHeadData.innerHTML = createHeading(entry);
+        addRow: function (obj,index) {
+            console.log(obj);
+            tableHeadData.innerHTML = "";
             tableBodyData.innerHTML = "";
-            console.log(tableHeadData);
-            let columns = document.querySelectorAll('th');
-            console.log("columns : ", columns)
-            // let columnLength = tableHeading.childNodes.length;
-            let index = 1;
-            // console.log('length : ', columnLength);
-            for (let rowData of entry.arear.toBePaid) {
-                const row = document.createElement('tr');
+            const tableHeading = document.createElement('tr');
+            let heading = "";
+            obj = obj.arear.paid;
+
+            if (obj.npaAllowance === 'yes' && obj.washingAllowance === 'no') {
+                console.log('true in npaYes washingNo')
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>NPA Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            } else if (obj.npaAllowance === 'no' && obj.washingAllowance === 'yes') {
+                console.log('true in npaNo washingYes')
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>Washing Allowance Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            } else if (obj.npaAllowance === 'yes' && obj.washingAllowance === 'yes') {
+                console.log('true in npaYes washingYes');
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>NPA Amount</th><th>Washing Allowance Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            } else {
+                console.log('true in npaNo washingNo');
+                heading = `<th>S.No.</th><th>Month/Year</th><th>Days</th><th>Basic Amount</th><th>DA Amount</th><th>Total</th><th>Actions</th>`;
+                tableHeading.innerHTML = heading;
+            }
+            tableHeadData.appendChild(tableHeading);
+            // let index = 1;
+            console.log(obj);
+
+            // const row = document.createElement('tr');
+            // row.id = `row-${index}`;
+            // row.innerHTML = `
+            //         <td></td>
+            //         <td>${monthsName[rowData.month]} / ${rowData.year}</td>
+            //         <td>${rowData.days}</td>
+            //         <td><input type="number" placeholder=${rowData.basicSalary}></td>
+            //         ${rowData.npaAmount !== undefined ? `<td>${rowData.npaAmount}</td>` : ''} 
+            //         ${rowData.washingAmount !== undefined ? `<td>${rowData.washingAmount}</td>` : ''} 
+            //         <td>${rowData.daAmount}</td>
+            //         <td>${rowData.basicSalary + rowData.daAmount || 0 + rowData.npaAmount || 0 + rowData.washingAmount || 0}</td>
+            //         <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
+            //         tableBodyData.appendChild(row);
+
+            for (let rowData of obj) {
                 console.log(rowData);
+                const row = document.createElement('tr');
                 row.id = `row-${index}`;
                 row.innerHTML = `
                     <td></td>
                     <td>${monthsName[rowData.month]} / ${rowData.year}</td>
                     <td>${rowData.days}</td>
                     <td><input type="number" placeholder=${rowData.basicSalary}></td>
-
-                    ${rowData.npaAmount !== undefined ? `<td>${rowData.npaAmount}</td>` : ''}
-                    ${rowData.washingAmount !== undefined ? `<td>${rowData.washingAmount}</td>` : ''}
+                    ${rowData.npaAmount !== undefined ? `<td>${rowData.npaAmount}</td>` : ''} 
+                    ${rowData.washingAmount !== undefined ? `<td>${rowData.washingAmount}</td>` : ''} 
                     <td>${rowData.daAmount}</td>
-                    <td>${rowData.basicSalary + rowData.daAmount + (rowData.npaAmount || 0) + (rowData.washingAmount || 0)}</td>
-
-                    <td><input type="number" placeholder=${rowData.basicSalary}></td>
-                    ${rowData.npaAmount !== undefined ? `<td><input type="number" placeholder=${rowData.npaAmount}></td>` : ''}
-                    ${rowData.washingAmount !== undefined ? `<td><input type="number" placeholder=${rowData.washingAmount}></td>` : ''}
-                    <td><input type="number" placeholder=${rowData.daAmount}></td>
-                    <td>${rowData.basicSalary + (rowData.daAmount || 0) + (rowData.npaAmount || 0) + (rowData.washingAmount || 0)}</td>
+                    <td>${rowData.basicSalary + rowData.daAmount || 0 + rowData.npaAmount || 0 + rowData.washingAmount || 0}</td>
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
                 tableBodyData.appendChild(row);
                 index++;
             }
-            console.log(tableHeadData);;
-            table.append(tableHeadData, tableBodyData);
+            console.log(tableHeadData);
+            console.log(tableBodyData);
+            table.appendChild(tableHeadData,tableBodyData);
+            console.log(tableBodyData);
         },
         deleteRow: function (id) {
             const row = document.getElementById(id);
-            console.log(row);
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
             const data = JSON.parse(localStorage.getItem('data')) || {};
-            // data.forEach((item, index) => {
-            //     console.log(item, index);
-            //     this.addRow(item, index);
-            // });
+            console.log(data.arear.paid);
+            data.arear.paid.forEach((item, index) => {
+                console.log(item, index);
+                this.addRow(item, index);
+            });
         }
     }
 })();
@@ -211,8 +230,8 @@ const appModule = (function (dataCtrl, uiCtrl) {
     document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
-        // uiCtrl.createHeading(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
+        console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
@@ -268,3 +287,4 @@ let obj = {
     }
 }
 */
+

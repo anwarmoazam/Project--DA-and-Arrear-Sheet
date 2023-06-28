@@ -13,6 +13,7 @@ h1{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 10px;
     padding-bottom: 20px;
 }
 
@@ -26,14 +27,16 @@ label{
 
 table, th, td{
     border: 1px solid black;
+    margin: 0;
+    padding: 0;
 }
 
 #output{
-    width: 1000px;
     text-align: center;
 }
 
 .result{
+    padding: 0 20px;
     display: grid;
     justify-content: center;
     align-items: center;
@@ -55,4 +58,20 @@ tbody tr td:first-child::before {
 
 #emp-name{
     height: 30px;
+}
+
+input[type='number']{
+    width: 80px;
+    text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+table>th::nth-child(:last-child){
+    width: 1000px;
+    display: none;
 }
