@@ -138,7 +138,6 @@ const dataModule = (function () {
 // Module for handling UI related tasks
 const uiModule = (function () {
     const table = document.getElementById('output');
-    const employeeDetail = document.getElementById('emp-detail');
     const tableHeadData = document.querySelector('tHead');
     const tableBodyData = document.querySelector('tbody');
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
