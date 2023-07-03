@@ -111,6 +111,8 @@ const dataModule = (function () {
                 if (month.month === 3) {
                     surrender = { ...month };
                     surrender.washingAmount ? surrender.washingAmount = 0 : 0;
+                    surrender.totalSurrenderAmount = surrender.totalAmount;
+                    delete surrender.totalAmount;
                     toBePaid.push(surrender);
                     console.log(surrender)
                 }
@@ -169,16 +171,17 @@ const uiModule = (function () {
             console.log("columns : ", columns)
             // let columnLength = tableHeading.childNodes.length;
             let index = 1;
-            // console.log('length : ', columnLength);
+            console.log('Obj : ', entry.arear.toBePaid);
             for (let rowData of entry.arear.toBePaid) {
                 const row = document.createElement('tr');
                 console.log(rowData);
                 row.id = `row-${index}`;
                 row.innerHTML = `
                     <td></td>
-                    <td>${monthsName[rowData.month]} / ${rowData.year}</td>
+                    ${rowData.month === 3 && rowData.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[rowData.month]} / ${rowData.year}</td>`} 
+                    
                     <td>${rowData.days}</td>
-                    <td><input type="number" placeholder=${rowData.basicSalary}></td>
+                    <td><input type="number" placeholder=${rowData.basicSalary} class="salary"></td>
 
                     ${rowData.npaAmount !== undefined ? `<td>${rowData.npaAmount}</td>` : ''}
                     ${rowData.washingAmount !== undefined ? `<td>${rowData.washingAmount}</td>` : ''}
@@ -228,6 +231,15 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const index = Array.from(row.parentElement.children).indexOf(row);
             uiCtrl.deleteRow(event.target.dataset.id);
             // dataCtrl.deleteData(index);
+        }
+        if (event.target.classList.contains('salary')) {
+            const row = event.target.parentElement.parentElement;
+            // const index = Array.from(row.parentElement.children).indexOf(row);
+            // uiCtrl.deleteRow(event.target.dataset.id);
+            console.log('clicked', row);
+            event.target.addEventListener('change',function(event){
+                console.log('changed');
+            })
         }
     })
 })(dataModule, uiModule);
