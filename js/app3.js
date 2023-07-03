@@ -108,9 +108,9 @@ const dataModule = (function () {
                 month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
                 data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
                 toBePaid.push(month);
-                if(month.month === 3){
-                    surrender = {...month};
-                    surrender.washingAmount ? delete surrender.washingAmount : 0;
+                if (month.month === 3) {
+                    surrender = { ...month };
+                    surrender.washingAmount ? surrender.washingAmount = 0 : 0;
                     toBePaid.push(surrender);
                     console.log(surrender)
                 }
