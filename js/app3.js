@@ -162,15 +162,44 @@ const uiModule = (function () {
                 toDate: document.getElementById('toDate').value,
             };
         },
-        addRow: function (entry) {
+        addRow: function (entry, index) {
             table.innerHTML = "";
-            tableHeadData.innerHTML = createHeading(entry);
+            // tableHeadData.innerHTML = createHeading(entry);
+            tableBodyData.innerHTML = "";
+
+            const row = document.createElement('tr');
+            // document.getElementById('emp-name').innerText = `Name of Employee : ${entry.name}`;
+            row.id = `row-${index}`;
+            row.innerHTML = `
+                    <td></td>
+                    ${entry.month === 3 && entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[entry.month]} / ${entry.year}</td>`} 
+                    
+                    <td>${entry.days}</td>
+                    <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
+
+                    ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ''}
+                    ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ''}
+                    <td>${entry.daAmount}</td>
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
+
+                    <td><input type="number" placeholder=${entry.basicSalary}></td>
+                    ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
+                    ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
+                    <td><input type="number" placeholder=${entry.daAmount}></td>
+                    <td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
+                    <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
+            tableBodyData.appendChild(row);
+            console.log(tableBodyData);
+
+            // table.append(tableHeadData, tableBodyData);
+        },
+
+        addRow1: function (entry, index) {
+            table.innerHTML = "";
+            // tableHeadData.innerHTML = createHeading(entry);
             tableBodyData.innerHTML = "";
             console.log(tableHeadData);
-            let columns = document.querySelectorAll('th');
-            console.log("columns : ", columns)
-            // let columnLength = tableHeading.childNodes.length;
-            let index = 1;
+            // let index = 1;
             console.log('Obj : ', entry.arear.toBePaid);
             for (let rowData of entry.arear.toBePaid) {
                 const row = document.createElement('tr');
@@ -207,10 +236,18 @@ const uiModule = (function () {
         },
         populateTable: function () {
             const data = JSON.parse(localStorage.getItem('data')) || {};
-            // data.forEach((item, index) => {
-            //     console.log(item, index);
-            //     this.addRow(item, index);
-            // });
+            const heading = createHeading(data);
+            console.log(heading);
+            console.log(tableHeadData);
+            table.innerHTML = "";
+            tableHeadData.innerHTML = heading;
+            console.log(tableHeadData);
+            console.log('data : ', data.arear.alreadyPaid);
+            data.arear.alreadyPaid.forEach((item, index) => {
+                console.log(item, index);
+                this.addRow(item, index);
+            });
+            table.append(tableHeadData,tableBodyData);
         }
     }
 })();
@@ -221,6 +258,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
     document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
+        console.log(inputData);
         // uiCtrl.createHeading(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
@@ -237,7 +275,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             // const index = Array.from(row.parentElement.children).indexOf(row);
             // uiCtrl.deleteRow(event.target.dataset.id);
             console.log('clicked', row);
-            event.target.addEventListener('change',function(event){
+            event.target.addEventListener('change', function (event) {
                 console.log('changed');
             })
         }
