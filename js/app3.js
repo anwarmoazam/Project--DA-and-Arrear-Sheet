@@ -258,9 +258,11 @@ const appModule = (function (dataCtrl, uiCtrl) {
     document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
+        // inputData.populateTable();
         console.log(inputData);
         // uiCtrl.createHeading(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
+        console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
