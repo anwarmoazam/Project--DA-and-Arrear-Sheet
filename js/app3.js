@@ -165,12 +165,12 @@ const uiModule = (function () {
         addRow: function (entry, index) {
             table.innerHTML = "";
             // tableHeadData.innerHTML = createHeading(entry);
-            tableBodyData.innerHTML = "";
+            // tableBodyData.innerHTML = "";
 
             const row = document.createElement('tr');
             // document.getElementById('emp-name').innerText = `Name of Employee : ${entry.name}`;
             row.id = `row-${index}`;
-            row.innerHTML = `
+            row.innerHTML += `
                     <td></td>
                     ${entry.month === 3 && entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[entry.month]} / ${entry.year}</td>`} 
                     
@@ -190,7 +190,6 @@ const uiModule = (function () {
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
             console.log(tableBodyData);
-
             // table.append(tableHeadData, tableBodyData);
         },
 
@@ -235,19 +234,19 @@ const uiModule = (function () {
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
+            table.innerHTML = "";
+            tableHeadData.innerHTML = "";
+            tableBodyData.innerHTML = "";
             const data = JSON.parse(localStorage.getItem('data')) || {};
             const heading = createHeading(data);
-            console.log(heading);
-            console.log(tableHeadData);
-            table.innerHTML = "";
             tableHeadData.innerHTML = heading;
-            console.log(tableHeadData);
+
             console.log('data : ', data.arear.alreadyPaid);
             data.arear.alreadyPaid.forEach((item, index) => {
                 console.log(item, index);
                 this.addRow(item, index);
             });
-            table.append(tableHeadData,tableBodyData);
+            table.append(tableHeadData, tableBodyData);
         }
     }
 })();
@@ -264,6 +263,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
         console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
+        uiCtrl.populateTable();
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
         if (event.target.classList.contains('delete-btn')) {
