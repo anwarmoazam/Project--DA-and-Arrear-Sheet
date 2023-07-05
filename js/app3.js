@@ -297,7 +297,10 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const index = Array.from(row.parentElement.children).indexOf(row);
             console.log(row);
             console.log(index);
-            console.log(dataCtrl.getData());
+            const data = dataCtrl.getData();
+            const obj = data.arear.toBePaid[index];
+            console.log(obj);
+            console.log(data.arear.toBePaid.indexOf(Object.keys(obj),index));
         }
     })
 })(dataModule, uiModule);
