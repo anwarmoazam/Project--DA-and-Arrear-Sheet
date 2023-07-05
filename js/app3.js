@@ -81,7 +81,7 @@ const dataModule = (function () {
         return monthAndYear;
     }
 
-    function calculateSurrender(){
+    function calculateSurrender() {
 
     }
 
@@ -114,6 +114,9 @@ const dataModule = (function () {
                 toBePaid.push(month);
                 if (month.month === 3) {
                     surrender = { ...month };
+                    surrender.basicSalary = 0;
+                    surrender.daAmount = 0;
+                    surrender.npaAmount ? surrender.npaAmount = 0 : 0; 
                     surrender.washingAmount ? surrender.washingAmount = 0 : 0;
                     surrender.totalSurrenderAmount = surrender.totalAmount;
                     delete surrender.totalAmount;
@@ -178,38 +181,38 @@ const uiModule = (function () {
                     <td></td>
                     ${entry.totalSurrenderAmount ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
                     ${entry.totalSurrenderAmount ? '' : `<td>${entry.days}</td>`}
-                    ${entry.totalSurrenderAmount ? `<td><input type="number" placeholder=0 class="salary"></td>` : `<td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>`}
-                    ${entry.totalSurrenderAmount && entry.npaAmount !== undefined ? `<td>0</td>` : entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
-                    ${entry.totalSurrenderAmount && entry.washingAmount !== undefined ? `<td>0</td>` : entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
-                    ${entry.totalSurrenderAmount ? `<td>0</td>` : `<td>${entry.daAmount}</td>`}
-                    ${entry.totalSurrenderAmount ? `<td>0</td>` : `<td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>`}
+                    <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
+                    ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
+                    ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
+                    <td>${entry.daAmount}</td>
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
 
-                    ${entry.totalSurrenderAmount ? `<td><input type="number" placeholder=0 class="salary"></td>` : `<td><input type="number" placeholder=${entry.basicSalary}></td>`}
-                    ${entry.totalSurrenderAmount && entry.npaAmount !== undefined ? `<td>0</td>` : entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
-                    ${entry.totalSurrenderAmount && entry.washingAmount !== undefined ? `<td>0</td>` : entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
-                    ${entry.totalSurrenderAmount ? `<td>0</td>` : `<td><input type="number" placeholder=${entry.daAmount}></td>`}
-                    ${entry.totalSurrenderAmount ? `<td>0</td>` : `<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>`}
+                    <td><input type="number" placeholder=${entry.basicSalary}></td>
+                    ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
+                    ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
+                    <td><input type="number" placeholder=${entry.daAmount}></td>
+                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
             console.log(tableBodyData);
         },
 
-                    // <td></td>
-                    // ${entry.month === 3 && entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[entry.month]} / ${entry.year}</td>`} 
-                    // <td>${entry.days}</td>
+        // <td></td>
+        // ${entry.month === 3 && entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[entry.month]} / ${entry.year}</td>`} 
+        // <td>${entry.days}</td>
 
-                    // <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
-                    // ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ''}
-                    // ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ''}
-                    // <td>${entry.daAmount}</td>
-                    // <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
+        // <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
+        // ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ''}
+        // ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ''}
+        // <td>${entry.daAmount}</td>
+        // <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
 
-                    // <td><input type="number" placeholder=${entry.basicSalary}></td>
-                    // ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
-                    // ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
-                    // <td><input type="number" placeholder=${entry.daAmount}></td>
-                    // <td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
-                    // <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>
+        // <td><input type="number" placeholder=${entry.basicSalary}></td>
+        // ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
+        // ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
+        // <td><input type="number" placeholder=${entry.daAmount}></td>
+        // <td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
+        // <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>
 
         addRow1: function (entry, index) {
             table.innerHTML = "";
@@ -292,15 +295,20 @@ const appModule = (function (dataCtrl, uiCtrl) {
         }
     });
     document.querySelector('tbody').addEventListener('dblclick', function (event) {
+        console.log('clicked');
         if (event.target.classList.contains('month-year')) {
             const row = event.target.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
-            console.log(row);
-            console.log(index);
             const data = dataCtrl.getData();
-            const obj = data.arear.toBePaid[index];
-            console.log(obj);
-            console.log(data.arear.toBePaid.indexOf(Object.keys(obj),index));
+            const obj = { ...data.arear.toBePaid[index] };
+            let surrenderIndex = data.arear.toBePaid.indexOf(data.arear.toBePaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
+            data.arear.toBePaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
+            data.arear.toBePaid[surrenderIndex].daAmount = obj.daAmount / 2;
+            obj.washingAmount ? data.arear.toBePaid[surrenderIndex].washingAmount = 0 : 0;
+            obj.npaAmount ? data.arear.toBePaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+            // data.arear.toBePaid[surrenderIndex].totalSurrenderAmount = data.arear.toBePaid[surrenderIndex].basicSalary + data.arear.toBePaid[surrenderIndex].daAmount;
+            localStorage.setItem('data', JSON.stringify(data));
+            uiCtrl.populateTable();
         }
     })
 })(dataModule, uiModule);
