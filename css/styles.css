@@ -11,8 +11,10 @@ h1{
 #form{
     width: auto;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     gap: 10px;
     padding-bottom: 20px;
 }

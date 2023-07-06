@@ -81,19 +81,24 @@ const dataModule = (function () {
         return monthAndYear;
     }
 
-    function calculateSurrender() {
-
+    function getMessAllowance(obj, oldAmt, newAmt) {
+        let date = new Date(2022, 3, 1);
+        return (new Date(obj.year, obj.month) <= date) ? oldAmt : newAmt;
     }
 
     return {
-        saveData: function (name, designation, empId, salary, npa, washing, fromDate, toDate) {
+        saveData: function (name, designation, empId, salary, npa, washing, mess, hda, other, fromDate, toDate) {
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
+            console.log('totalData = ', totalData);
             data.name = name.trim();
             data.designation = designation.trim();
             data.empId = empId.trim();
             data.salary = salary;
             data.npaAllowance = npa;
             data.washingAllowance = washing;
+            data.messAllowance = mess;
+            data.hardDutyAllowance = hda;
+            data.other = other;
             data.fromDate = fromDate;
             data.toDate = toDate;
             data.salary = salary;
@@ -109,24 +114,27 @@ const dataModule = (function () {
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
+                data.messAllowance === '1200-1320' ? month.messAmount = getMessAllowance(month, 1200, 1320) : data.messAllowance === '800-880' ? month.messAmount = getMessAllowance(month, 800, 880) : data.messAllowance === '250-275' ? month.messAmount = getMessAllowance(month, 250, 275) : 0;
+
                 month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0);
                 data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
-                toBePaid.push(month);
+                alreadyPaid.push(month);
                 if (month.month === 3) {
                     surrender = { ...month };
                     surrender.basicSalary = 0;
                     surrender.daAmount = 0;
                     surrender.npaAmount ? surrender.npaAmount = 0 : 0;
                     surrender.washingAmount ? surrender.washingAmount = 0 : 0;
+                    surrender.messAmount ? surrender.messAmount = 0 : 0;
                     surrender.totalSurrenderAmount = surrender.totalAmount;
                     delete surrender.totalAmount;
-                    toBePaid.push(surrender);
+                    alreadyPaid.push(surrender);
                     console.log(surrender)
                 }
             }
-            data.arear.toBePaid = toBePaid;
-            alreadyPaid = [...toBePaid];
             data.arear.alreadyPaid = alreadyPaid;
+            toBePaid = [...alreadyPaid];
+            data.arear.toBePaid = toBePaid;
 
             localStorage.setItem('data', JSON.stringify(data));
             return data;
@@ -153,7 +161,21 @@ const uiModule = (function () {
 
     function createHeading(headingValue) {
         console.log(headingValue);
-        return `<tr><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="14"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="12"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' ? `colspan="10"` : ''}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId}</th></tr><tr><th rowspan="2">S.No.</th><th rowspan="2">Month/Year</th><th rowspan="2">Days</th><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="5"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' ? `colspan="4"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="4"` : `colspan="3"`}>Pay to be Drawn</th><th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' ? `colspan="5"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' ? `colspan="4"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' ? `colspan="4"` : `colspan="3"`}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr><tr><th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th><th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th></tr>`;
+        let columns = Object.keys(headingValue);
+        console.log(columns);
+        return `<tr>
+            <th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' ? `colspan="16"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="14"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="10"` : ''}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId}</th>
+        </tr>
+        <tr>
+            <th rowspan="2">S.No.</th><th rowspan="2">Month/Year</th>
+            <th rowspan="2">Days</th>
+            <th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' ? `colspan="6"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' ? `colspan="5"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' ? `colspan="5"` : `colspan="4"`}>Pay to be Drawn</th>
+            <th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' ? `colspan="6"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' ? `colspan="5"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' ? `colspan="5"` : `colspan="4"`}>Pay Already Drawn</th>
+            <th rowspan="2">Actions</th>
+        </tr>
+        <tr>
+            <th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th>
+            <th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th></tr>`;
     }
 
     return {
@@ -165,6 +187,9 @@ const uiModule = (function () {
                 salary: Number(document.getElementById('salary').value),
                 npa: document.getElementById('npa').value,
                 washing: document.getElementById('washing').value,
+                mess: document.getElementById('mess').value,
+                hda: document.getElementById('hda').value,
+                other: document.getElementById('other').value,
                 fromDate: document.getElementById('fromDate').value,
                 toDate: document.getElementById('toDate').value,
             };
@@ -184,14 +209,16 @@ const uiModule = (function () {
                     <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
                     ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
                     ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
+                    ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     <td>${entry.daAmount}</td>
-                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
                     ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
                     ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
+                    ${entry.messAmount !== undefined ? `<td><input type="number" placeholder=${entry.messAmount}></td>` : ''}
                     <td><input type="number" placeholder=${entry.daAmount}></td>
-                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>`}
+                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
             console.log(tableBodyData);
@@ -280,10 +307,11 @@ const appModule = (function (dataCtrl, uiCtrl) {
     document.getElementById('form').addEventListener('submit', function (event) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
+        console.log(inputData);
         // inputData.populateTable();
         console.log(inputData);
         // uiCtrl.createHeading(inputData);
-        const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.fromDate, inputData.toDate);
+        const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.mess, inputData.hda, inputData.other, inputData.fromDate, inputData.toDate);
         console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
         uiCtrl.populateTable();
@@ -306,7 +334,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             console.log(obj);
             let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
             console.log('surrender index ', surrenderIndex);
-            if(surrenderIndex >= 0){
+            if (surrenderIndex >= 0) {
                 data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
                 data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
                 obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
@@ -330,7 +358,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             console.log('obj ', obj);
             console.log(newValue);
             for (let i = index; i < data.arear.alreadyPaid.length; i++) {
-                if(data.arear.alreadyPaid[i].totalSurrenderAmount === undefined){
+                if (data.arear.alreadyPaid[i].totalSurrenderAmount === undefined) {
                     data.arear.alreadyPaid[i].basicSalary = newValue;
                 }
             }
@@ -353,7 +381,10 @@ const appModule = (function (dataCtrl, uiCtrl) {
     })
 })(dataModule, uiModule);
 
-
+function getMessAllowance(obj, oldAmt, newAmt) {
+    let date = new Date(2022, 2, 31);
+    return (new Date(obj.year, obj.month, obj.date) < date) ? oldAmt : newAmt;
+}
 
 function getDaysInMonth(month, year) {
     return new Date(year, month, 0).getDate();

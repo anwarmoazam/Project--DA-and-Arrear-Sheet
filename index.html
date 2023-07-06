@@ -15,11 +15,14 @@
     <form action="" id="form">
         <div class="emp-detail">
             <label for="name">Name : </label>
-            <input type="text" name="name" id="name" placeholder="Enter name here " autofocus autocomplete="off" required>
+            <input type="text" name="name" id="name" placeholder="Enter name here " autofocus autocomplete="off"
+                required>
             <label for="designation">Designation : </label>
-            <input type="text" name="designation" id="designation" placeholder="Enter Designation here " autofocus autocomplete="off" required>
+            <input type="text" name="designation" id="designation" placeholder="Enter Designation here " autofocus
+                autocomplete="off" required>
             <label for="emp-id">Employee ID : </label>
-            <input type="text" name="emp-id" id="empId" placeholder="Enter Employee ID here " autofocus autocomplete="off" required>        
+            <input type="text" name="emp-id" id="empId" placeholder="Enter Employee ID here " autofocus
+                autocomplete="off" required>
             <label for="salary">Enter Basic Salary : </label>
             <input type="number" name="salary" id="salary" placeholder="Enter salary" required>
         </div>
@@ -29,11 +32,34 @@
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select>
-            <label for="npa">Washing Allowance : </label>
+            <label for="washing">Washing Allowance : </label>
             <select name="washing" id="washing" required>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select>
+            <label for="mess">Mess Allowance : </label>
+            <select name="mess" id="mess" required>
+                <optgroup label="No">
+                    <option value="0">0</option>
+                </optgroup>
+                <optgroup label="Yes">
+                    <option value="1200-1320">1200 / 1320</option>
+                    <option value="800-880">800 / 880</option>
+                    <option value="250-275">250 / 275</option>
+                </optgroup>
+            </select>
+            <label for="hda">Hard Duty Allowance : </label>
+            <select name="hda" id="hda" required>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+            <label for="other">Other Allowance : </label>
+            <select name="other" id="other" required>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+        </div>
+        <div class="date">
             <label for="date">Select From Date : </label>
             <input type="date" name="fromDate" id="fromDate" required>
             <label for="date">Select To Date : </label>
