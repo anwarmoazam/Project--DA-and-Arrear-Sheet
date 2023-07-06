@@ -116,7 +116,7 @@ const dataModule = (function () {
                     surrender = { ...month };
                     surrender.basicSalary = 0;
                     surrender.daAmount = 0;
-                    surrender.npaAmount ? surrender.npaAmount = 0 : 0; 
+                    surrender.npaAmount ? surrender.npaAmount = 0 : 0;
                     surrender.washingAmount ? surrender.washingAmount = 0 : 0;
                     surrender.totalSurrenderAmount = surrender.totalAmount;
                     delete surrender.totalAmount;
@@ -300,15 +300,49 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const row = event.target.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
-            const obj = { ...data.arear.toBePaid[index] };
-            let surrenderIndex = data.arear.toBePaid.indexOf(data.arear.toBePaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
-            data.arear.toBePaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
-            data.arear.toBePaid[surrenderIndex].daAmount = obj.daAmount / 2;
-            obj.washingAmount ? data.arear.toBePaid[surrenderIndex].washingAmount = 0 : 0;
-            obj.npaAmount ? data.arear.toBePaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
-            // data.arear.toBePaid[surrenderIndex].totalSurrenderAmount = data.arear.toBePaid[surrenderIndex].basicSalary + data.arear.toBePaid[surrenderIndex].daAmount;
+            const obj = { ...data.arear.alreadyPaid[index] };
+            console.log(obj);
+            let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
+            console.log('surrender index ',surrenderIndex);
+            data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
+            data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
+            obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
+            obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+            localStorage.setItem('data', JSON.stringify(data));
+            console.log(data);
+            uiCtrl.populateTable();
+        }
+    });
+    document.querySelector('tbody').addEventListener('change', function (event) {
+        console.log('clicked');
+        if (event.target.classList.contains('salary')) {
+            const row = event.target.parentElement.parentElement;
+            const index = Array.from(row.parentElement.children).indexOf(row);
+            const data = dataCtrl.getData();
+            const newValue = Number(event.target.value);
+            const obj = { ...data.arear.alreadyPaid[index] };
+            console.log('row ', row);
+            console.log('index ', index);
+            console.log('obj ', obj);
+            console.log(newValue);
+            for (let i = index; i < data.arear.alreadyPaid.length; i++) {
+                data.arear.alreadyPaid[i].basicSalary = newValue;
+            }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
+
+            // const row = event.target.parentElement;
+            // const index = Array.from(row.parentElement.children).indexOf(row);
+            // const data = dataCtrl.getData();
+            // const obj = { ...data.arear.toBePaid[index] };
+            // console.log(obj);
+            // let surrenderIndex = data.arear.toBePaid.indexOf(data.arear.toBePaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
+            // data.arear.toBePaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
+            // data.arear.toBePaid[surrenderIndex].daAmount = obj.daAmount / 2;
+            // obj.washingAmount ? data.arear.toBePaid[surrenderIndex].washingAmount = 0 : 0;
+            // obj.npaAmount ? data.arear.toBePaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+            // localStorage.setItem('data', JSON.stringify(data));
+            // uiCtrl.populateTable();
         }
     })
 })(dataModule, uiModule);
