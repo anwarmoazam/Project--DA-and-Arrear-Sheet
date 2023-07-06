@@ -260,7 +260,7 @@ const uiModule = (function () {
             tableHeadData.innerHTML = "";
             tableBodyData.innerHTML = "";
             const data = JSON.parse(localStorage.getItem('data')) || {};
-            (Object.keys(data).length !== 0) ? heading = createHeading(data) : '' ;
+            (Object.keys(data).length !== 0) ? heading = createHeading(data) : '';
             tableHeadData.innerHTML = heading;
             console.log(Object.keys(data));
             if (Object.keys(data).length !== 0) {
@@ -302,14 +302,16 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const row = event.target.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
-            const obj = { ...data.arear.alreadyPaid[index] };
+            const obj = (data.arear.alreadyPaid[index].date !== 1) ? { ...data.arear.alreadyPaid[index + 1] } : { ...data.arear.alreadyPaid[index] };
             console.log(obj);
             let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
             console.log('surrender index ', surrenderIndex);
-            data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
-            data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
-            obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
-            obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+            if(surrenderIndex >= 0){
+                data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
+                data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
+                obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
+                obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+            }
             localStorage.setItem('data', JSON.stringify(data));
             console.log(data);
             uiCtrl.populateTable();
@@ -328,7 +330,9 @@ const appModule = (function (dataCtrl, uiCtrl) {
             console.log('obj ', obj);
             console.log(newValue);
             for (let i = index; i < data.arear.alreadyPaid.length; i++) {
-                data.arear.alreadyPaid[i].basicSalary = newValue;
+                if(data.arear.alreadyPaid[i].totalSurrenderAmount === undefined){
+                    data.arear.alreadyPaid[i].basicSalary = newValue;
+                }
             }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
