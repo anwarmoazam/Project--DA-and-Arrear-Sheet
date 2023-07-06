@@ -256,17 +256,19 @@ const uiModule = (function () {
         },
         populateTable: function () {
             table.innerHTML = "";
+            let heading;
             tableHeadData.innerHTML = "";
             tableBodyData.innerHTML = "";
             const data = JSON.parse(localStorage.getItem('data')) || {};
-            const heading = createHeading(data);
+            (Object.keys(data).length !== 0) ? heading = createHeading(data) : '' ;
             tableHeadData.innerHTML = heading;
-
-            console.log('data : ', data.arear.alreadyPaid);
-            data.arear.alreadyPaid.forEach((item, index) => {
-                console.log(item, index);
-                this.addRow(item, index);
-            });
+            console.log(Object.keys(data));
+            if (Object.keys(data).length !== 0) {
+                data.arear.alreadyPaid.forEach((item, index) => {
+                    console.log(item, index);
+                    this.addRow(item, index);
+                });
+            }
             table.append(tableHeadData, tableBodyData);
         }
     }
@@ -303,7 +305,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const obj = { ...data.arear.alreadyPaid[index] };
             console.log(obj);
             let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
-            console.log('surrender index ',surrenderIndex);
+            console.log('surrender index ', surrenderIndex);
             data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
             data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
             obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
