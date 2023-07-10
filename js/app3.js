@@ -214,7 +214,7 @@ const uiModule = (function () {
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
                     <td>${entry.daAmount}</td>
-                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)}</td>
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)+ (entry.hdaAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
                     ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
@@ -222,7 +222,7 @@ const uiModule = (function () {
                     ${entry.messAmount !== undefined ? `<td><input type="number" placeholder=${entry.messAmount}></td>` : ''}
                     ${entry.hdaAmount !== undefined ? `<td><input type="number" placeholder=${entry.hdaAmount}></td>` : ``}
                     <td><input type="number" placeholder=${entry.daAmount}></td>
-                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)}</td>`}
+                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
             console.log(tableBodyData);
