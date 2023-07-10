@@ -55,7 +55,7 @@ tbody tr {
 tbody tr td:first-child::before {
     content: counter(rowNumber);
     min-width: 1em;
-    margin-right: 0.5em;
+    /* margin-right: 0.5em; */
 }
 
 #emp-name{
@@ -76,4 +76,8 @@ input::-webkit-inner-spin-button {
 table>th::nth-child(:last-child){
     width: 1000px;
     display: none;
+}
+
+.month-year{
+    text-align: left;    
 }
