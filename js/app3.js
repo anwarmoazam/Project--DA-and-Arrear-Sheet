@@ -198,9 +198,7 @@ const uiModule = (function () {
         },
         addRow: function (entry, index) {
             table.innerHTML = "";
-            // tableHeadData.innerHTML = createHeading(entry);
-            // tableBodyData.innerHTML = "";
-
+            console.log('entry : ',entry);
             const row = document.createElement('tr');
             // document.getElementById('emp-name').innerText = `Name of Employee : ${entry.name}`;
             row.id = `row-${index}`;
@@ -364,6 +362,8 @@ const appModule = (function (dataCtrl, uiCtrl) {
             for (let i = index; i < data.arear.alreadyPaid.length; i++) {
                 if (data.arear.alreadyPaid[i].totalSurrenderAmount === undefined) {
                     data.arear.alreadyPaid[i].basicSalary = newValue;
+                    // uiCtrl.addRow()
+                    console.log(data.arear.alreadyPaid[i]);
                 }
             }
             localStorage.setItem('data', JSON.stringify(data));
