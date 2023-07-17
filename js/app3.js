@@ -89,7 +89,6 @@ const dataModule = (function () {
     return {
         saveData: function (name, designation, empId, salary, npa, washing, mess, hda, other, fromDate, toDate) {
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
-            console.log('totalData = ', totalData);
             data.name = name.trim();
             data.designation = designation.trim();
             data.empId = empId.trim();
@@ -110,7 +109,6 @@ const dataModule = (function () {
                 const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
                 const date = month.year + "," + month.month + "," + 1;
                 let surrender = {};
-                console.log(month);
                 month.basicSalary = Math.round(basicSalaryPerDay * month.days);
                 data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
@@ -131,7 +129,6 @@ const dataModule = (function () {
                     surrender.totalSurrenderAmount = surrender.totalAmount;
                     delete surrender.totalAmount;
                     alreadyPaid.push(surrender);
-                    console.log(surrender)
                 }
             }
             data.arear.alreadyPaid = alreadyPaid;
@@ -148,8 +145,21 @@ const dataModule = (function () {
             data.splice(index, 1);
             localStorage.setItem('data', JSON.stringify(data));
         },
-        updateData: function (index) {
+        updateData: function (obj) {
+            const savedObj = this.getData();
+            const basicSalaryPerDay = (obj.basicSalary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
+            const npaAmountPerDay = (obj.basicSalary * npaRate / 100) / (getDaysInMonth(obj.month, obj.year));
+            const washingAmountPerDay = 150 / (getDaysInMonth(obj.month, obj.year));
+            const date = obj.year + "," + obj.month + "," + 1;
+            // let surrender = {};
+            obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
+            savedObj.npaAllowance === 'yes' ? obj.npaAmount = Math.round(npaAmountPerDay * obj.days) : 0;
+            savedObj.washingAllowance === 'yes' ? obj.washingAmount = Math.round(washingAmountPerDay * obj.days) : 0;
+            savedObj.messAllowance === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : savedObj.messAllowance === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : savedObj.messAllowance === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
+            savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
 
+            obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
+            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getArrearRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getArrearRate(date) / 100);
         }
     }
 })();
@@ -162,9 +172,6 @@ const uiModule = (function () {
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     function createHeading(headingValue) {
-        console.log(headingValue);
-        let columns = Object.keys(headingValue);
-        console.log(columns);
         return `<tr>
             <th ${headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance == 'yes' ? `colspan="18"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="16"` : headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="14"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="12"` : headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="10"` : ''}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId}</th>
         </tr>
@@ -198,9 +205,7 @@ const uiModule = (function () {
         },
         addRow: function (entry, index) {
             table.innerHTML = "";
-            console.log('entry : ',entry);
             const row = document.createElement('tr');
-            // document.getElementById('emp-name').innerText = `Name of Employee : ${entry.name}`;
             row.id = `row-${index}`;
             row.innerHTML += `
                     <td></td>
@@ -212,7 +217,7 @@ const uiModule = (function () {
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
                     <td>${entry.daAmount}</td>
-                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0)+ (entry.hdaAmount || 0)}</td>
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
                     ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
@@ -223,64 +228,10 @@ const uiModule = (function () {
                     ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
-            console.log(tableBodyData);
         },
 
-        // <td></td>
-        // ${entry.month === 3 && entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[entry.month]} / ${entry.year}</td>`} 
-        // <td>${entry.days}</td>
-
-        // <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
-        // ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ''}
-        // ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ''}
-        // <td>${entry.daAmount}</td>
-        // <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
-
-        // <td><input type="number" placeholder=${entry.basicSalary}></td>
-        // ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
-        // ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
-        // <td><input type="number" placeholder=${entry.daAmount}></td>
-        // <td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0)}</td>
-        // <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>
-
-        addRow1: function (entry, index) {
-            table.innerHTML = "";
-            // tableHeadData.innerHTML = createHeading(entry);
-            tableBodyData.innerHTML = "";
-            console.log(tableHeadData);
-            // let index = 1;
-            console.log('Obj : ', entry.arear.toBePaid);
-            for (let rowData of entry.arear.toBePaid) {
-                const row = document.createElement('tr');
-                console.log(rowData);
-                row.id = `row-${index}`;
-                row.innerHTML = `
-                    <td></td>
-                    ${rowData.month === 3 && rowData.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow">Surrender</td>` : `<td>${monthsName[rowData.month]} / ${rowData.year}</td>`} 
-                    
-                    <td>${rowData.days}</td>
-                    <td><input type="number" placeholder=${rowData.basicSalary} class="salary"></td>
-
-                    ${rowData.npaAmount !== undefined ? `<td>${rowData.npaAmount}</td>` : ''}
-                    ${rowData.washingAmount !== undefined ? `<td>${rowData.washingAmount}</td>` : ''}
-                    <td>${rowData.daAmount}</td>
-                    <td>${rowData.basicSalary + rowData.daAmount + (rowData.npaAmount || 0) + (rowData.washingAmount || 0)}</td>
-
-                    <td><input type="number" placeholder=${rowData.basicSalary}></td>
-                    ${rowData.npaAmount !== undefined ? `<td><input type="number" placeholder=${rowData.npaAmount}></td>` : ''}
-                    ${rowData.washingAmount !== undefined ? `<td><input type="number" placeholder=${rowData.washingAmount}></td>` : ''}
-                    <td><input type="number" placeholder=${rowData.daAmount}></td>
-                    <td>${rowData.basicSalary + (rowData.daAmount || 0) + (rowData.npaAmount || 0) + (rowData.washingAmount || 0)}</td>
-                    <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
-                tableBodyData.appendChild(row);
-                index++;
-            }
-            console.log(tableHeadData);;
-            table.append(tableHeadData, tableBodyData);
-        },
         deleteRow: function (id) {
             const row = document.getElementById(id);
-            console.log(row);
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
@@ -291,10 +242,8 @@ const uiModule = (function () {
             const data = JSON.parse(localStorage.getItem('data')) || {};
             (Object.keys(data).length !== 0) ? heading = createHeading(data) : '';
             tableHeadData.innerHTML = heading;
-            console.log(Object.keys(data));
             if (Object.keys(data).length !== 0) {
                 data.arear.alreadyPaid.forEach((item, index) => {
-                    console.log(item, index);
                     this.addRow(item, index);
                 });
             }
@@ -311,7 +260,6 @@ const appModule = (function (dataCtrl, uiCtrl) {
         const inputData = uiCtrl.getDOM();
         console.log(inputData);
         // inputData.populateTable();
-        console.log(inputData);
         // uiCtrl.createHeading(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.mess, inputData.hda, inputData.other, inputData.fromDate, inputData.toDate);
         console.log(newData);
@@ -333,9 +281,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
             const obj = (data.arear.alreadyPaid[index].date !== 1) ? { ...data.arear.alreadyPaid[index + 1] } : { ...data.arear.alreadyPaid[index] };
-            console.log(obj);
             let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
-            console.log('surrender index ', surrenderIndex);
             if (surrenderIndex >= 0) {
                 data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
                 data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
@@ -343,44 +289,26 @@ const appModule = (function (dataCtrl, uiCtrl) {
                 obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
             }
             localStorage.setItem('data', JSON.stringify(data));
-            console.log(data);
             uiCtrl.populateTable();
         }
     });
     document.querySelector('tbody').addEventListener('change', function (event) {
-        console.log('clicked');
         if (event.target.classList.contains('salary')) {
             const row = event.target.parentElement.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
-            const newValue = Number(event.target.value);
+            console.log(data);
+            const newSalary = Number(event.target.value);
             const obj = { ...data.arear.alreadyPaid[index] };
-            console.log('row ', row);
-            console.log('index ', index);
-            console.log('obj ', obj);
-            console.log(newValue);
+            console.log(obj);
             for (let i = index; i < data.arear.alreadyPaid.length; i++) {
                 if (data.arear.alreadyPaid[i].totalSurrenderAmount === undefined) {
-                    data.arear.alreadyPaid[i].basicSalary = newValue;
-                    // uiCtrl.addRow()
-                    console.log(data.arear.alreadyPaid[i]);
+                    data.arear.alreadyPaid[i].basicSalary = newSalary;
+                    dataCtrl.updateData(data.arear.alreadyPaid[i]);
                 }
             }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
-
-            // const row = event.target.parentElement;
-            // const index = Array.from(row.parentElement.children).indexOf(row);
-            // const data = dataCtrl.getData();
-            // const obj = { ...data.arear.toBePaid[index] };
-            // console.log(obj);
-            // let surrenderIndex = data.arear.toBePaid.indexOf(data.arear.toBePaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
-            // data.arear.toBePaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
-            // data.arear.toBePaid[surrenderIndex].daAmount = obj.daAmount / 2;
-            // obj.washingAmount ? data.arear.toBePaid[surrenderIndex].washingAmount = 0 : 0;
-            // obj.npaAmount ? data.arear.toBePaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
-            // localStorage.setItem('data', JSON.stringify(data));
-            // uiCtrl.populateTable();
         }
     })
 })(dataModule, uiModule);
