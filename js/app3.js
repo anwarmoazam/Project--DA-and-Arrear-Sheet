@@ -183,8 +183,8 @@ const uiModule = (function () {
             <th rowspan="2">Actions</th>
         </tr>
         <tr>
-            <th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th>
-            <th>Basic Salary</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>DA Amount</th><th>Total Amount</th></tr>`;
+            <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th>
+            <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th></tr>`;
     }
 
     return {
@@ -212,19 +212,19 @@ const uiModule = (function () {
                     ${entry.totalSurrenderAmount ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
                     ${entry.totalSurrenderAmount ? '' : `<td>${entry.days}</td>`}
                     <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
+                    <td>${entry.daAmount}</td>
                     ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
                     ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
-                    <td>${entry.daAmount}</td>
                     <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
+                    <td><input type="number" placeholder=${entry.daAmount}></td>
                     ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
                     ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
                     ${entry.messAmount !== undefined ? `<td><input type="number" placeholder=${entry.messAmount}></td>` : ''}
                     ${entry.hdaAmount !== undefined ? `<td><input type="number" placeholder=${entry.hdaAmount}></td>` : ``}
-                    <td><input type="number" placeholder=${entry.daAmount}></td>
                     ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
