@@ -87,12 +87,13 @@ const dataModule = (function () {
     }
 
     return {
-        saveData: function (name, designation, empId, salary, npa, washing, mess, hda, other, fromDate, toDate) {
+        saveData: function (name, designation, empId, salary, npa, hra, washing, mess, hda, other, fromDate, toDate) {
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
             data.name = name.trim();
             data.designation = designation.trim();
             data.empId = empId.trim();
             data.salary = salary;
+            data.hra = hra;
             data.npaAllowance = npa;
             data.washingAllowance = washing;
             data.messAllowance = mess;
@@ -195,6 +196,7 @@ const uiModule = (function () {
                 empId: document.getElementById('empId').value,
                 salary: Number(document.getElementById('salary').value),
                 npa: document.getElementById('npa').value,
+                hra: document.getElementById('hra').value,
                 washing: document.getElementById('washing').value,
                 mess: document.getElementById('mess').value,
                 hda: document.getElementById('hda').value,
@@ -261,7 +263,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
         console.log(inputData);
         // inputData.populateTable();
         // uiCtrl.createHeading(inputData);
-        const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.washing, inputData.mess, inputData.hda, inputData.other, inputData.fromDate, inputData.toDate);
+        const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.salary, inputData.npa, inputData.hra, inputData.washing, inputData.mess, inputData.hda, inputData.other, inputData.fromDate, inputData.toDate);
         console.log(newData);
         uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
         uiCtrl.populateTable();
