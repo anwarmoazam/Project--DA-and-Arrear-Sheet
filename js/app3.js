@@ -149,7 +149,7 @@ const dataModule = (function () {
                     delete surrender.totalAmount;
                     alreadyPaid.push(surrender);
                 }
-                if (month.month === 6) {
+                if (month.month === 7) {
                     month.basicSalary = month.basicSalary + Math.round((month.basicSalary * 3 / 100) / 100) * 100;
                     salary = month.basicSalary;
                 }
@@ -269,7 +269,7 @@ const uiModule = (function () {
                     ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
-                    ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount}></td>` : ``}
+                    ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount} class="other-amount"></td>` : ``}
                     <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.hraAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0) + (entry.otherAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
@@ -314,11 +314,8 @@ const appModule = (function (dataCtrl, uiCtrl) {
         event.preventDefault();
         const inputData = uiCtrl.getDOM();
         console.log(inputData);
-        // inputData.populateTable();
-        // uiCtrl.createHeading(inputData);
         const newData = dataCtrl.saveData(inputData.name, inputData.designation, inputData.empId, inputData.empPan, inputData.salary, inputData.npa, inputData.hra, inputData.washing, inputData.mess, inputData.hda, inputData.other, inputData.fromDate, inputData.toDate);
         console.log(newData);
-        uiCtrl.addRow(newData, dataCtrl.getData().length - 1);
         uiCtrl.populateTable();
     });
     document.querySelector('tbody').addEventListener('click', function (event) {
@@ -362,6 +359,16 @@ const appModule = (function (dataCtrl, uiCtrl) {
                     dataCtrl.updateData(data.arear.alreadyPaid[i]);
                 }
             }
+            localStorage.setItem('data', JSON.stringify(data));
+            uiCtrl.populateTable();
+        }
+        if(event.target.classList.contains('other-amount')){
+            const row = event.target.parentElement.parentElement;
+            const index = Array.from(row.parentElement.children).indexOf(row);
+            const data = dataCtrl.getData();
+            const value = Number(event.target.value);
+            console.log(data);
+            data.arear.alreadyPaid[index].otherAmount = value;
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
         }
