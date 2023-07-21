@@ -131,8 +131,10 @@ const dataModule = (function () {
                 data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
                 data.messAllowance === '1200-1320' ? month.messAmount = getMessAllowance(month, 1200, 1320) : data.messAllowance === '800-880' ? month.messAmount = getMessAllowance(month, 800, 880) : data.messAllowance === '250-275' ? month.messAmount = getMessAllowance(month, 250, 275) : 0;
                 data.hardDutyAllowance == 'yes' ? month.hdaAmount = 200 : 0;
+                data.other == 'yes' ? month.otherAmount = 0 : 0;
 
-                month.totalAmount = month.basicSalary + (month.npaAmount || 0) + (month.washingAmount || 0) + (month.messAmount || 0) + (month.hdaAmount || 0);
+
+                month.totalAmount = month.basicSalary + (month.hraAmount || 0) + (month.npaAmount || 0) + (month.washingAmount || 0) + (month.messAmount || 0) + (month.hdaAmount || 0) + (month.otherAmount || 0);
                 data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
                 alreadyPaid.push(month);
                 if (month.month === 3) {
@@ -193,7 +195,15 @@ const uiModule = (function () {
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     function createHeading(headingValue) {
-        console.log(headingValue);
+        console.log(headingValue.arear.alreadyPaid[0]);
+        const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
+        keys.splice(0,4)
+        console.log(keys);
+        return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` :   keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
+        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` :   keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` :``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
+        <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
+        
+/*
         return `<tr>
             <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance == 'yes' ? `colspan="20"` : 
             headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="18"` :
@@ -223,6 +233,7 @@ const uiModule = (function () {
         <tr>
             <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th>
             <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th></tr>`;
+*/
     }
 
     return {
@@ -258,7 +269,8 @@ const uiModule = (function () {
                     ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
-                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>
+                    ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount}></td>` : ``}
+                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.hraAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0) + (entry.otherAmount || 0)}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
                     <td><input type="number" placeholder=${entry.daAmount}></td>
@@ -267,7 +279,8 @@ const uiModule = (function () {
                     ${entry.washingAmount !== undefined ? `<td><input type="number" placeholder=${entry.washingAmount}></td>` : ''}
                     ${entry.messAmount !== undefined ? `<td><input type="number" placeholder=${entry.messAmount}></td>` : ''}
                     ${entry.hdaAmount !== undefined ? `<td><input type="number" placeholder=${entry.hdaAmount}></td>` : ``}
-                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0)}</td>`}
+                    ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount}></td>` : ``}
+                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.hraAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0) + (entry.otherAmount || 0)}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
         },
