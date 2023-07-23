@@ -383,6 +383,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const value = Number(event.target.value);
             console.log(data);
             data.arear.alreadyPaid[index].otherAmount = value;
+            data.arear.alreadyPaid[index].totalAmount += value;
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
         }
