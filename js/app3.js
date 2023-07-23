@@ -150,8 +150,22 @@ const dataModule = (function () {
                     alreadyPaid.push(surrender);
                 }
                 if (month.month === 7) {
-                    month.basicSalary = month.basicSalary + Math.round((month.basicSalary * 3 / 100) / 100) * 100;
-                    salary = month.basicSalary;
+                    salary = month.basicSalary + Math.round((month.basicSalary * 3 / 100) / 100) * 100;
+                    const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
+                    const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
+                    const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
+                    const date = month.year + "," + month.month + "," + 1;
+                    month.basicSalary = Math.round(basicSalaryPerDay * month.days);
+                    data.houseRentAllowance === 'yes' ? month.hraAmount = Math.round(month.basicSalary * getHraRate(month.date) / 100) : 0;
+                    data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
+                    data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
+                    data.messAllowance === '1200-1320' ? month.messAmount = getMessAllowance(month, 1200, 1320) : data.messAllowance === '800-880' ? month.messAmount = getMessAllowance(month, 800, 880) : data.messAllowance === '250-275' ? month.messAmount = getMessAllowance(month, 250, 275) : 0;
+                    data.hardDutyAllowance == 'yes' ? month.hdaAmount = 200 : 0;
+                    data.other == 'yes' ? month.otherAmount = 0 : 0;
+
+
+                    month.totalAmount = month.basicSalary + (month.hraAmount || 0) + (month.npaAmount || 0) + (month.washingAmount || 0) + (month.messAmount || 0) + (month.hdaAmount || 0) + (month.otherAmount || 0);
+                    data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
                 }
             }
             data.arear.alreadyPaid = alreadyPaid;
