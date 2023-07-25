@@ -14,7 +14,7 @@ const dataModule = (function () {
         return endDate.getDate() - (date.getDate() - 1);
     }
 
-    function getArrearRate(date) {
+    function getDaRate(date) {
         let daRate = 0;
         date = new Date(date);
         if (date >= new Date(2017, 0, 1) && date <= new Date(2017, 5, 30)) {
@@ -36,6 +36,8 @@ const dataModule = (function () {
         } else if (date >= new Date(2022, 6, 1) && date <= new Date(2022, 11, 31)) {
             daRate = 38;
         } else if (date >= new Date(2023, 0, 1) && date <= new Date(2023, 5, 30)) {
+            daRate = 42;
+        } else {
             daRate = 42;
         }
         return daRate;
@@ -87,8 +89,10 @@ const dataModule = (function () {
                 currentMonthAndYear.days = getDaysInMonth(currentMonth, currentYear);
                 currentMonth++;
             }
+            console.log(currentMonthAndYear);
             monthAndYear.push(currentMonthAndYear);
         }
+        console.log(monthAndYear);
         return monthAndYear;
     }
 
@@ -97,11 +101,31 @@ const dataModule = (function () {
         return (new Date(obj.year, obj.month) <= date) ? oldAmt : newAmt;
     }
 
+    function calculateData(obj) {
+        // const basicSalaryPerDay = Math.round(data.salary / getDaysInMonth(obj.month, obj.year));
+        const basicSalaryPerDay = (data.salary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
+        const date = obj.year + "," + obj.month + "," + 1;
+        obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
+        obj.hraAmount !== undefined ? obj.hraAmount = Math.round((obj.basicSalary * getHraRate(date)) / 100) : 0;
+        obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
+        console.log(obj.npaAmount);
+        obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
+        obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : obj.messAmount = '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
+        obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
+        obj.other !== undefined ? obj.otherAmount = 0 : 0;
+        console.log('total amount : ', obj.totalAmount);
+        console.log(obj.npaAmount !== undefined);
+        console.log('da rate : ', getDaRate(date));
+        console.log('date : ', date);
+        obj.npaAmount !== undefined ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100)
+        console.log('da amount : ', obj.daAmount);
+        obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
+        return obj;
+    }
+
     return {
         saveData: function (name, designation, empId, empPan, salary, npa, hra, washing, mess, hda, other, fromDate, toDate) {
             const totalData = getCurrentMonthAndYear(fromDate, toDate);
-            console.log(totalData);
-            console.log(data);
 
             data.name = name.trim();
             data.designation = designation.trim();
@@ -119,55 +143,35 @@ const dataModule = (function () {
             data.salary = salary;
             data.arear = {};
             let toBePaid = [], alreadyPaid = [];
-            for (let month of totalData) {
-                const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
-                const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
-                const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
-                const date = month.year + "," + month.month + "," + 1;
-                let surrender = {};
-                month.basicSalary = Math.round(basicSalaryPerDay * month.days);
-                data.houseRentAllowance === 'yes' ? month.hraAmount = Math.round(month.basicSalary * getHraRate(month.date) / 100) : 0;
-                data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
-                data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
-                data.messAllowance === '1200-1320' ? month.messAmount = getMessAllowance(month, 1200, 1320) : data.messAllowance === '800-880' ? month.messAmount = getMessAllowance(month, 800, 880) : data.messAllowance === '250-275' ? month.messAmount = getMessAllowance(month, 250, 275) : 0;
-                data.hardDutyAllowance == 'yes' ? month.hdaAmount = 200 : 0;
-                data.other == 'yes' ? month.otherAmount = 0 : 0;
 
-
-                month.totalAmount = month.basicSalary + (month.hraAmount || 0) + (month.npaAmount || 0) + (month.washingAmount || 0) + (month.messAmount || 0) + (month.hdaAmount || 0) + (month.otherAmount || 0);
-                data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
-                alreadyPaid.push(month);
+            totalData.forEach((month, index) => {
+                month.month === 7 && index !== 0 ? data.salary += Math.round((data.salary * 3 / 100) / 100) * 100 : data.salary;
+                month.basicSalary = data.salary;
+                data.npaAllowance === 'yes' ? month.npaAmount = 0 : 0;
+                data.houseRentAllowance === 'yes' ? month.hraAmount = 0 : 0;
+                data.washingAllowance === 'yes' ? month.washingAmount = 0 : 0;
+                data.messAllowance === '1200-1320' || data.messAllowance === '800-880' || data.messAllowance === '250-275' ? month.messAmount = data.messAllowance : 0;
+                data.hardDutyAllowance === 'yes' ? month.hdaAmount = 0 : 0;
+                data.other === 'yes' ? month.otherAmount = 0 : 0;
+                alreadyPaid.push(calculateData(month));
                 if (month.month === 3) {
-                    surrender = { ...month };
+                    let surrender = { ...month };
+                    //    surrender = { ...month };
                     surrender.basicSalary = 0;
                     surrender.daAmount = 0;
                     surrender.npaAmount ? surrender.npaAmount = 0 : 0;
+                    surrender.hraAmount ? surrender.hraAmount = 0 : 0;
                     surrender.washingAmount ? surrender.washingAmount = 0 : 0;
                     surrender.messAmount ? surrender.messAmount = 0 : 0;
                     surrender.hdaAmount ? surrender.hdaAmount = 0 : 0;
                     surrender.totalSurrenderAmount = surrender.totalAmount;
-                    delete surrender.totalAmount;
+                    surrender.totalSurrenderAmount = 0;
+                    // delete surrender.totalAmount;
+                    surrender.totalAmount = 0;
                     alreadyPaid.push(surrender);
                 }
-                if (month.month === 7) {
-                    salary = month.basicSalary + Math.round((month.basicSalary * 3 / 100) / 100) * 100;
-                    const basicSalaryPerDay = (salary / getDaysInMonth(month.month, month.year)).toFixed(2);
-                    const npaAmountPerDay = (salary * npaRate / 100) / (getDaysInMonth(month.month, month.year));
-                    const washingAmountPerDay = 150 / (getDaysInMonth(month.month, month.year));
-                    const date = month.year + "," + month.month + "," + 1;
-                    month.basicSalary = Math.round(basicSalaryPerDay * month.days);
-                    data.houseRentAllowance === 'yes' ? month.hraAmount = Math.round(month.basicSalary * getHraRate(month.date) / 100) : 0;
-                    data.npaAllowance === 'yes' ? month.npaAmount = Math.round(npaAmountPerDay * month.days) : 0;
-                    data.washingAllowance === 'yes' ? month.washingAmount = Math.round(washingAmountPerDay * month.days) : 0;
-                    data.messAllowance === '1200-1320' ? month.messAmount = getMessAllowance(month, 1200, 1320) : data.messAllowance === '800-880' ? month.messAmount = getMessAllowance(month, 800, 880) : data.messAllowance === '250-275' ? month.messAmount = getMessAllowance(month, 250, 275) : 0;
-                    data.hardDutyAllowance == 'yes' ? month.hdaAmount = 200 : 0;
-                    data.other == 'yes' ? month.otherAmount = 0 : 0;
+            })
 
-
-                    month.totalAmount = month.basicSalary + (month.hraAmount || 0) + (month.npaAmount || 0) + (month.washingAmount || 0) + (month.messAmount || 0) + (month.hdaAmount || 0) + (month.otherAmount || 0);
-                    data.npaAllowance === 'yes' ? month.daAmount = Math.round((month.basicSalary + month.npaAmount) * getArrearRate(date) / 100) : month.daAmount = Math.round(month.basicSalary * getArrearRate(date) / 100);
-                }
-            }
             data.arear.alreadyPaid = alreadyPaid;
             toBePaid = [...alreadyPaid];
             data.arear.toBePaid = toBePaid;
@@ -208,46 +212,57 @@ const uiModule = (function () {
     const tableBodyData = document.querySelector('tbody');
     const monthsName = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+    function createTotal(columValue) {
+        const keys = Object.keys(columValue.arear.alreadyPaid[0]);
+        keys.splice(0, 4);
+        const obj = {};
+        keys.forEach(item => {
+            obj[item] = columValue.arear.alreadyPaid.reduce((acc, curr) => {
+                acc += curr[item];
+                return acc;
+            }, 0)
+        })
+        return obj;
+    }
+
     function createHeading(headingValue) {
-        console.log(headingValue.arear.alreadyPaid[0]);
         const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
-        keys.splice(0,4)
-        console.log(keys);
-        return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` :   keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
-        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` :   keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` :``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
+        keys.splice(0, 4)
+        return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` : keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
+        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
+
+        /*
+                return `<tr>
+                    <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance == 'yes' ? `colspan="20"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="18"` :
+                    headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="16"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="14"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="12"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="10"` : ''}>
+                    Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th>
+                </tr>
+                <tr>
+                    <th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th>
+                    <th rowspan="2">Days</th>
+                    <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="8"` : 
         
-/*
-        return `<tr>
-            <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance == 'yes' ? `colspan="20"` : 
-            headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="18"` :
-            headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="16"` : 
-            headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="14"` : 
-            headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="12"` : 
-            headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="10"` : ''}>
-            Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th>
-        </tr>
-        <tr>
-            <th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th>
-            <th rowspan="2">Days</th>
-            <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="8"` : 
-
-            headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="7"` : 
-            headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="6"` : 
-            headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="5"` : 
-            headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="3"` : ''}>Pay to be Drawn</th>
-
-            <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="8"` : 
-            headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="7"` : 
-            headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="5"` : 
-            headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="4"` : 
-            headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="3"` : ''}>Pay Already Drawn</th>
-            <th rowspan="2">Actions</th>
-        </tr>
-        <tr>
-            <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th>
-            <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th></tr>`;
-*/
+                    headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="7"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="6"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' ? `colspan="5"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="3"` : ''}>Pay to be Drawn</th>
+        
+                    <th ${headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="8"` : 
+                    headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.houseRentAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' ? `colspan="7"` : 
+                    headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' && headingValue.hardDutyAllowance === 'no' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' && headingValue.hardDutyAllowance === 'yes' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="5"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance !== '0' || headingValue.npaAllowance === 'yes' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' || headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'yes' && headingValue.messAllowance === '0' ? `colspan="4"` : 
+                    headingValue.npaAllowance === 'no' && headingValue.washingAllowance === 'no' && headingValue.messAllowance === '0' ? `colspan="3"` : ''}>Pay Already Drawn</th>
+                    <th rowspan="2">Actions</th>
+                </tr>
+                <tr>
+                    <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th>
+                    <th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}<th>Total Amount</th></tr>`;
+        */
     }
 
     return {
@@ -269,13 +284,14 @@ const uiModule = (function () {
             };
         },
         addRow: function (entry, index) {
+            console.log('index in addRow : ', index);
             table.innerHTML = "";
             const row = document.createElement('tr');
             row.id = `row-${index}`;
             row.innerHTML += `
                     <td></td>
-                    ${entry.totalSurrenderAmount ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
-                    ${entry.totalSurrenderAmount ? '' : `<td>${entry.days}</td>`}
+                    ${entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
+                    ${entry.totalSurrenderAmount !== undefined ? '' : `<td>${entry.days}</td>`}
                     <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
                     <td>${entry.daAmount}</td>
                     ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
@@ -284,7 +300,7 @@ const uiModule = (function () {
                     ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
                     ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
                     ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount} class="other-amount"></td>` : ``}
-                    <td>${entry.basicSalary + entry.daAmount + (entry.npaAmount || 0) + (entry.hraAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0) + (entry.otherAmount || 0)}</td>
+                    <td>${entry.totalAmount !== undefined ? entry.totalAmount : entry.totalSurrenderAmount}</td>
 
                     <td><input type="number" placeholder=${entry.basicSalary}></td>
                     <td><input type="number" placeholder=${entry.daAmount}></td>
@@ -294,7 +310,7 @@ const uiModule = (function () {
                     ${entry.messAmount !== undefined ? `<td><input type="number" placeholder=${entry.messAmount}></td>` : ''}
                     ${entry.hdaAmount !== undefined ? `<td><input type="number" placeholder=${entry.hdaAmount}></td>` : ``}
                     ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount}></td>` : ``}
-                    ${`<td>${entry.basicSalary + (entry.daAmount || 0) + (entry.npaAmount || 0) + (entry.hraAmount || 0) + (entry.washingAmount || 0) + (entry.messAmount || 0) + (entry.hdaAmount || 0) + (entry.otherAmount || 0)}</td>`}
+                    ${`<td>${entry.totalAmount}</td>`}
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
         },
@@ -304,6 +320,7 @@ const uiModule = (function () {
             tableBodyData.removeChild(row);
         },
         populateTable: function () {
+            const totalRow = document.createElement('tr');
             table.innerHTML = "";
             let heading;
             tableHeadData.innerHTML = "";
@@ -315,8 +332,11 @@ const uiModule = (function () {
                 data.arear.alreadyPaid.forEach((item, index) => {
                     this.addRow(item, index);
                 });
+                const total = createTotal(data);
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td><td>${total.npaAmount}</td><td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td>`
+                console.log(totalRow);
             }
-            table.append(tableHeadData, tableBodyData);
+            table.append(tableHeadData, tableBodyData, totalRow);
         }
     }
 })();
@@ -341,18 +361,19 @@ const appModule = (function (dataCtrl, uiCtrl) {
         }
     });
     document.querySelector('tbody').addEventListener('dblclick', function (event) {
-        console.log('clicked');
         if (event.target.classList.contains('month-year')) {
             const row = event.target.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
             const obj = (data.arear.alreadyPaid[index].date !== 1) ? { ...data.arear.alreadyPaid[index + 1] } : { ...data.arear.alreadyPaid[index] };
             let surrenderIndex = data.arear.alreadyPaid.indexOf(data.arear.alreadyPaid.find((item, idx) => item.totalSurrenderAmount !== undefined && idx > index), index);
+
             if (surrenderIndex >= 0) {
-                data.arear.alreadyPaid[surrenderIndex].basicSalary = obj.basicSalary / 2;
-                data.arear.alreadyPaid[surrenderIndex].daAmount = obj.daAmount / 2;
+                data.arear.alreadyPaid[surrenderIndex].basicSalary = Math.round(obj.basicSalary / 2);
+                data.arear.alreadyPaid[surrenderIndex].daAmount = Math.round(obj.daAmount / 2);
                 obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
-                obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = obj.npaAmount / 2 : 0;
+                obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = Math.round(obj.npaAmount / 2) : 0;
+                data.arear.alreadyPaid[surrenderIndex].totalSurrenderAmount = data.arear.alreadyPaid[surrenderIndex].basicSalary + data.arear.alreadyPaid[surrenderIndex].daAmount + (data.arear.alreadyPaid[surrenderIndex].npaAmount || 0);
             }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
@@ -376,7 +397,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
         }
-        if(event.target.classList.contains('other-amount')){
+        if (event.target.classList.contains('other-amount')) {
             const row = event.target.parentElement.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
