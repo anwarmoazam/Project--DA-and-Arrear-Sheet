@@ -200,7 +200,7 @@ const dataModule = (function () {
             savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
 
             obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
-            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getArrearRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getArrearRate(date) / 100);
+            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getArrearRate(date) / 100);
         }
     }
 })();
@@ -216,8 +216,10 @@ const uiModule = (function () {
         const keys = Object.keys(columValue.arear.alreadyPaid[0]);
         keys.splice(0, 4);
         const obj = {};
+        console.log(keys);
         keys.forEach(item => {
             obj[item] = columValue.arear.alreadyPaid.reduce((acc, curr) => {
+                console.log(acc,curr[item]);
                 acc += curr[item];
                 return acc;
             }, 0)
@@ -321,6 +323,7 @@ const uiModule = (function () {
         },
         populateTable: function () {
             const totalRow = document.createElement('tr');
+            totalRow.classList.add('total');
             table.innerHTML = "";
             let heading;
             tableHeadData.innerHTML = "";
@@ -333,10 +336,12 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td><td>${total.npaAmount}</td><td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td>`
+                console.log(total)
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>`:``}<td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>`:``}<td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td><td></td>`
                 console.log(totalRow);
             }
-            table.append(tableHeadData, tableBodyData, totalRow);
+            tableBodyData.appendChild(totalRow);
+            table.append(tableHeadData, tableBodyData);
         }
     }
 })();
@@ -374,6 +379,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
                 obj.washingAmount ? data.arear.alreadyPaid[surrenderIndex].washingAmount = 0 : 0;
                 obj.npaAmount ? data.arear.alreadyPaid[surrenderIndex].npaAmount = Math.round(obj.npaAmount / 2) : 0;
                 data.arear.alreadyPaid[surrenderIndex].totalSurrenderAmount = data.arear.alreadyPaid[surrenderIndex].basicSalary + data.arear.alreadyPaid[surrenderIndex].daAmount + (data.arear.alreadyPaid[surrenderIndex].npaAmount || 0);
+                data.arear.alreadyPaid[surrenderIndex].totalAmount = data.arear.alreadyPaid[surrenderIndex].basicSalary + data.arear.alreadyPaid[surrenderIndex].daAmount + (data.arear.alreadyPaid[surrenderIndex].npaAmount || 0);
             }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();

@@ -81,3 +81,12 @@ table>th::nth-child(:last-child){
 .month-year{
     text-align: left;    
 }
+
+.total td:first-child::before {
+    content: none;
+    min-width: 1em;
+}
+
+.total {
+    font-weight: bold;
+}
