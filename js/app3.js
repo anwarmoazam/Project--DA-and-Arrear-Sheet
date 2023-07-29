@@ -110,7 +110,7 @@ const dataModule = (function () {
         obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
         console.log(obj.npaAmount);
         obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
-        obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : obj.messAmount = '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
+        obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj,800,880) :obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj,800,880) : 0;
         obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
         obj.other !== undefined ? obj.otherAmount = 0 : 0;
         console.log('total amount : ', obj.totalAmount);
@@ -150,7 +150,7 @@ const dataModule = (function () {
                 data.npaAllowance === 'yes' ? month.npaAmount = 0 : 0;
                 data.houseRentAllowance === 'yes' ? month.hraAmount = 0 : 0;
                 data.washingAllowance === 'yes' ? month.washingAmount = 0 : 0;
-                data.messAllowance === '1200-1320' || data.messAllowance === '800-880' || data.messAllowance === '250-275' ? month.messAmount = data.messAllowance : 0;
+                data.messAllowance === '1200-1320' ? month.messAmount = data.messAllowance : data.messAllowance === '800-880' ? month.messAmount = data.messAllowance : data.messAllowance === '250-275' ? month.messAmount = data.messAllowance : 0;
                 data.hardDutyAllowance === 'yes' ? month.hdaAmount = 0 : 0;
                 data.other === 'yes' ? month.otherAmount = 0 : 0;
                 alreadyPaid.push(calculateData(month));
@@ -214,6 +214,7 @@ const uiModule = (function () {
 
     function createTotal(columValue) {
         const keys = Object.keys(columValue.arear.alreadyPaid[0]);
+        console.log(keys);
         keys.splice(0, 4);
         const obj = {};
         console.log(keys);
@@ -224,12 +225,16 @@ const uiModule = (function () {
                 return acc;
             }, 0)
         })
+        console.log(obj);
         return obj;
     }
+
+    // Smart Credit Card (Standard Chartered)
 
     function createHeading(headingValue) {
         const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
         keys.splice(0, 4)
+        console.log(keys);
         return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` : keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
         <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
@@ -336,8 +341,7 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                console.log(total)
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>`:``}<td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>`:``}<td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td><td></td>`
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td><td>${total.npaAmount}</td><td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td>`
                 console.log(totalRow);
             }
             tableBodyData.appendChild(totalRow);
