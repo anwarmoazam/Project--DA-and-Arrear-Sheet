@@ -110,14 +110,10 @@ const dataModule = (function () {
         obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
         console.log(obj.npaAmount);
         obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
-        obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj,800,880) :obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj,800,880) : 0;
+        obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj,800,880) :obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj,250,275) : 0;
         obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
         obj.other !== undefined ? obj.otherAmount = 0 : 0;
-        console.log('total amount : ', obj.totalAmount);
-        console.log(obj.npaAmount !== undefined);
-        console.log('da rate : ', getDaRate(date));
-        console.log('date : ', date);
-        obj.npaAmount !== undefined ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100)
+        obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
         console.log('da amount : ', obj.daAmount);
         obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
         return obj;
@@ -156,7 +152,6 @@ const dataModule = (function () {
                 alreadyPaid.push(calculateData(month));
                 if (month.month === 3) {
                     let surrender = { ...month };
-                    //    surrender = { ...month };
                     surrender.basicSalary = 0;
                     surrender.daAmount = 0;
                     surrender.npaAmount ? surrender.npaAmount = 0 : 0;
@@ -166,7 +161,6 @@ const dataModule = (function () {
                     surrender.hdaAmount ? surrender.hdaAmount = 0 : 0;
                     surrender.totalSurrenderAmount = surrender.totalAmount;
                     surrender.totalSurrenderAmount = 0;
-                    // delete surrender.totalAmount;
                     surrender.totalAmount = 0;
                     alreadyPaid.push(surrender);
                 }
@@ -228,8 +222,6 @@ const uiModule = (function () {
         console.log(obj);
         return obj;
     }
-
-    // Smart Credit Card (Standard Chartered)
 
     function createHeading(headingValue) {
         const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
@@ -341,7 +333,7 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td></td>`
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${Math.round(total.daAmount)}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${Math.round(total.totalAmount)}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td></td>`
                 console.log(totalRow);
             }
             tableBodyData.appendChild(totalRow);
