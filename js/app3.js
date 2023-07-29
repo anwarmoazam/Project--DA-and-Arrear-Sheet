@@ -200,7 +200,7 @@ const dataModule = (function () {
             savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
 
             obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
-            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getArrearRate(date) / 100);
+            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100);
         }
     }
 })();
@@ -341,7 +341,7 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td><td>${total.npaAmount}</td><td>${total.hraAmount}</td><td>${total.washingAmount}</td><td>${total.messAmount}</td><td>${total.hdaAmount}</td><td>${total.otherAmount}</td><td>${total.totalAmount}</td>`
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td></td>`
                 console.log(totalRow);
             }
             tableBodyData.appendChild(totalRow);
