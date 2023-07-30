@@ -110,7 +110,7 @@ const dataModule = (function () {
         obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
         console.log(obj.npaAmount);
         obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
-        obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj,800,880) :obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj,250,275) : 0;
+        obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
         obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
         obj.other !== undefined ? obj.otherAmount = 0 : 0;
         obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
@@ -181,20 +181,36 @@ const dataModule = (function () {
             localStorage.setItem('data', JSON.stringify(data));
         },
         updateData: function (obj) {
-            const savedObj = this.getData();
-            const basicSalaryPerDay = (obj.basicSalary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
-            const npaAmountPerDay = (obj.basicSalary * npaRate / 100) / (getDaysInMonth(obj.month, obj.year));
-            const washingAmountPerDay = 150 / (getDaysInMonth(obj.month, obj.year));
-            const date = obj.year + "," + obj.month + "," + 1;
-            // let surrender = {};
-            obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
-            savedObj.npaAllowance === 'yes' ? obj.npaAmount = Math.round(npaAmountPerDay * obj.days) : 0;
-            savedObj.washingAllowance === 'yes' ? obj.washingAmount = Math.round(washingAmountPerDay * obj.days) : 0;
-            savedObj.messAllowance === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : savedObj.messAllowance === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : savedObj.messAllowance === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
-            savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
 
-            obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
-            savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100);
+            const savedObj = this.getData();
+            // const basicSalaryPerDay = (obj.basicSalary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
+            const basicSalaryPerDay = (data.salary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
+            const date = obj.year + "," + obj.month + "," + 1;
+            obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
+            obj.hraAmount !== undefined ? obj.hraAmount = Math.round((obj.basicSalary * getHraRate(date)) / 100) : 0;
+            obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
+            console.log(obj.npaAmount);
+            obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
+            obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
+            obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
+            obj.other !== undefined ? obj.otherAmount = 0 : 0;
+            obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
+            console.log('da amount : ', obj.daAmount);
+            obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
+            return obj;
+
+            // const npaAmountPerDay = (obj.basicSalary * npaRate / 100) / (getDaysInMonth(obj.month, obj.year));
+            // const washingAmountPerDay = 150 / (getDaysInMonth(obj.month, obj.year));
+            // const date = obj.year + "," + obj.month + "," + 1;
+            // // let surrender = {};
+            // obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
+            // savedObj.npaAllowance === 'yes' ? obj.npaAmount = Math.round(npaAmountPerDay * obj.days) : 0;
+            // savedObj.washingAllowance === 'yes' ? obj.washingAmount = Math.round(washingAmountPerDay * obj.days) : 0;
+            // savedObj.messAllowance === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : savedObj.messAllowance === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : savedObj.messAllowance === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
+            // savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
+
+            // obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
+            // savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100);
         }
     }
 })();
@@ -214,7 +230,6 @@ const uiModule = (function () {
         console.log(keys);
         keys.forEach(item => {
             obj[item] = columValue.arear.alreadyPaid.reduce((acc, curr) => {
-                console.log(acc,curr[item]);
                 acc += curr[item];
                 return acc;
             }, 0)
@@ -283,7 +298,6 @@ const uiModule = (function () {
             };
         },
         addRow: function (entry, index) {
-            console.log('index in addRow : ', index);
             table.innerHTML = "";
             const row = document.createElement('tr');
             row.id = `row-${index}`;
@@ -333,7 +347,7 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${Math.round(total.daAmount)}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${Math.round(total.totalAmount)}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>`:``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` :``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>`:``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` :``}<td>${total.totalAmount}</td><td></td>`
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${Math.round(total.daAmount)}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${Math.round(total.totalAmount)}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${total.totalAmount}</td><td></td>`
                 console.log(totalRow);
             }
             tableBodyData.appendChild(totalRow);
@@ -388,11 +402,17 @@ const appModule = (function (dataCtrl, uiCtrl) {
             const data = dataCtrl.getData();
             console.log(data);
             const newSalary = Number(event.target.value);
+            data.salary = newSalary;
             const obj = { ...data.arear.alreadyPaid[index] };
-            console.log(obj);
+            console.log(data);
+            // data.arear.alreadyPaid.splice(index);
             for (let i = index; i < data.arear.alreadyPaid.length; i++) {
                 if (data.arear.alreadyPaid[i].totalSurrenderAmount === undefined) {
                     data.arear.alreadyPaid[i].basicSalary = newSalary;
+                    dataCtrl.updateData(data.arear.alreadyPaid[i]);
+                }
+                if (data.arear.alreadyPaid[i].month === 7 && i !== index) {
+                    data.salary += Math.round((data.salary * 3 / 100) / 100) * 100;
                     dataCtrl.updateData(data.arear.alreadyPaid[i]);
                 }
             }
