@@ -129,7 +129,7 @@ const dataModule = (function () {
         obj.messAmount !== undefined && obj.messAmount === '1200-1320-1450' ? obj.messAmount = getMessAllowance(obj, 1200, 1320, 1450) : obj.messAmount !== undefined && obj.messAmount === '800-880-970' ? obj.messAmount = getMessAllowance(obj, 800, 880, 970) : obj.messAmount !== undefined && obj.messAmount === '250-275-300' ? obj.messAmount = getMessAllowance(obj, 250, 275, 300) : 0;
         obj.hdaAmount !== undefined ? obj.hdaAmount = getHdaAllowance(obj, 200, 250) : 0;
         obj.other !== undefined ? obj.otherAmount = 0 : 0;
-        obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
+        obj.npaAmount !== undefined ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100);
         obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
         return obj;
     }
