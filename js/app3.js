@@ -96,27 +96,25 @@ const dataModule = (function () {
         return monthAndYear;
     }
 
-    function getMessAllowance(obj, amount1,amount2,amount3) {
-        // let date = new Date(2022, 3, 1);
-        // (new Date(obj.year, obj.month) <= new Date(2022,3,1)) ? amount1 : new Date(obj.year, obj.month) >= new Date(2022,3,1) ? amount2 : new Date(obj.year, obj.month) >= new Date(2023,6,1) ? amount3 : 0;
-        if(new Date(obj.year,obj.month) <= new Date(2022,3,1)){
-            return amount1;
-        } else if(new Date(obj.year,obj.month) >= new Date(2022,3,1) && new Date(obj.year,obj.month) <= new Date(2023,6,1)){
-            return amount2;
-        } else if(new Date(obj.year,obj.month) >= new Date(2023,6,1)){
-            return amount3;
+    function getMessAllowance(obj, amount1, amount2, amount3) {
+        if (new Date(obj.year, obj.month) <= new Date(2022, 3, 1)) {
+            return Math.round((amount1 / getDaysInMonth(obj.month, obj.year)) * obj.days);
+        } else if (new Date(obj.year, obj.month) >= new Date(2022, 3, 1) && new Date(obj.year, obj.month) <= new Date(2023, 6, 1)) {
+            return Math.round((amount2 / getDaysInMonth(obj.month, obj.year)) * obj.days);
+        } else if (new Date(obj.year, obj.month) >= new Date(2023, 6, 1)) {
+            return Math.round((amount3 / getDaysInMonth(obj.month, obj.year)) * obj.days);
         }
     }
 
     function getHdaAllowance(obj, amount1, amount2) {
         let date = new Date(2023, 6, 1);
-        return (new Date(obj.year, obj.month) <= date) ? amount1 : amount2;
+        return (new Date(obj.year, obj.month) <= date) ? Math.round((amount1 / getDaysInMonth(obj.month, obj.year) * obj.days)) : Math.round((amount2 / getDaysInMonth(obj.month, obj.year) * obj.days));
     }
 
-    function getWashingAllowance(obj,amount1,amount2){
-        if(new Date(obj.year,obj.month) >= new Date(2017,0,1) && new Date(obj.year,obj.month) <= new Date(2023,6,1)){
+    function getWashingAllowance(obj, amount1, amount2) {
+        if (new Date(obj.year, obj.month) >= new Date(2017, 0, 1) && new Date(obj.year, obj.month) <= new Date(2023, 6, 1)) {
             return Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days);
-        } else if(new Date(obj.year,obj.month) >= new Date(2023,6,1)){
+        } else if (new Date(obj.year, obj.month) >= new Date(2023, 6, 1)) {
             return Math.round((180 / getDaysInMonth(obj.month, obj.year)) * obj.days);
         }
     }
@@ -127,9 +125,9 @@ const dataModule = (function () {
         obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
         obj.hraAmount !== undefined ? obj.hraAmount = Math.round((obj.basicSalary * getHraRate(date)) / 100) : 0;
         obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
-        obj.washingAmount !== undefined ? obj.washingAmount = getWashingAllowance(obj,150,180) : 0;
-        obj.messAmount !== undefined && obj.messAmount === '1200-1320-1450' ? obj.messAmount = getMessAllowance(obj, 1200,1320,1450) : obj.messAmount !== undefined && obj.messAmount === '800-880-970' ? obj.messAmount = getMessAllowance(obj, 800,880,970) : obj.messAmount !== undefined && obj.messAmount === '250-275-300' ? obj.messAmount = getMessAllowance(obj, 250,275,300) : 0;
-        obj.hdaAmount !== undefined ? obj.hdaAmount = getHdaAllowance(obj,200,250) : 0;
+        obj.washingAmount !== undefined ? obj.washingAmount = getWashingAllowance(obj, 150, 180) : 0;
+        obj.messAmount !== undefined && obj.messAmount === '1200-1320-1450' ? obj.messAmount = getMessAllowance(obj, 1200, 1320, 1450) : obj.messAmount !== undefined && obj.messAmount === '800-880-970' ? obj.messAmount = getMessAllowance(obj, 800, 880, 970) : obj.messAmount !== undefined && obj.messAmount === '250-275-300' ? obj.messAmount = getMessAllowance(obj, 250, 275, 300) : 0;
+        obj.hdaAmount !== undefined ? obj.hdaAmount = getHdaAllowance(obj, 200, 250) : 0;
         obj.other !== undefined ? obj.otherAmount = 0 : 0;
         obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
         obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
