@@ -156,7 +156,7 @@ const dataModule = (function () {
             let toBePaid = [], alreadyPaid = [];
 
             totalData.forEach((month, index) => {
-                month.month === 7 && index !== 0 ? data.salary += Math.round((data.salary * 3 / 100) / 100) * 100 : data.salary;
+                month.month === 7 && index !== 0 ? data.salary = Math.round((data.salary + (data.salary * 3 / 100)) / 100) * 100 : data.salary;
                 month.basicSalary = data.salary;
                 data.npaAllowance === 'yes' ? month.npaAmount = 0 : 0;
                 data.houseRentAllowance === 'yes' ? month.hraAmount = 0 : 0;
