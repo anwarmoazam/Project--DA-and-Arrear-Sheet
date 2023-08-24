@@ -153,7 +153,7 @@ const dataModule = (function () {
             data.toDate = toDate;
             data.salary = salary;
             data.arear = {};
-            let toBePaid = [], alreadyPaid = [];
+            let toBePaid = [], alreadyPaid = [], difference=[];
 
             totalData.forEach((month, index) => {
                 month.month === 7 && index !== 0 ? data.salary = Math.round((data.salary + (data.salary * 3 / 100)) / 100) * 100 : data.salary;
@@ -184,7 +184,8 @@ const dataModule = (function () {
             data.arear.alreadyPaid = alreadyPaid;
             toBePaid = [...alreadyPaid];
             data.arear.toBePaid = toBePaid;
-
+            difference = [...alreadyPaid];
+            data.arear.difference = difference;
             localStorage.setItem('data', JSON.stringify(data));
             return data;
         },
@@ -257,9 +258,14 @@ const uiModule = (function () {
         const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
         keys.splice(0, 4)
         console.log(keys);
+        /*
         return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` : keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
         <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
+        */
+        return `<tr><th ${keys.length === 9 ? `colspan="31"` : keys.length === 8 ? `colspan="28"` : keys.length === 7 ? `colspan="25"` : keys.length === 6 ? `colspan="22"` : keys.length === 5 ? `colspan="19"` : keys.length === 4 ? `colspan="16"` : keys.length === 3 ? `colspan="13"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
+        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Difference Amount</th><th rowspan="2">Actions</th></tr>
+        <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
 
         /*
                 return `<tr>
@@ -339,6 +345,16 @@ const uiModule = (function () {
                     ${entry.hdaAmount !== undefined ? `<td><input type="number" placeholder=${entry.hdaAmount}></td>` : ``}
                     ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount}></td>` : ``}
                     ${`<td>${entry.totalAmount}</td>`}
+
+                    <td>${entry.basicSalary}</td>
+                    <td>${entry.daAmount}</td>
+                    ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
+                    ${entry.hraAmount !== undefined ? `<td>${entry.hraAmount}</td>` : ``}
+                    ${entry.washingAmount !== undefined ? `<td>${entry.washingAmount}</td>` : ``}
+                    ${entry.messAmount !== undefined ? `<td>${entry.messAmount}</td>` : ``}
+                    ${entry.hdaAmount !== undefined ? `<td>${entry.hdaAmount}</td>` : ``}
+                    ${entry.otherAmount !== undefined ? `<td>${entry.otherAmount}</td>` : ``}
+                    <td>${entry.totalAmount !== undefined ? entry.totalAmount : entry.totalSurrenderAmount}</td>
                     <td><button class="edit-btn">Edit</button><button class="delete-btn" data-id="${row.id}">Delete</button></td>`;
             tableBodyData.appendChild(row);
         },
@@ -362,7 +378,7 @@ const uiModule = (function () {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
-                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${Math.round(total.daAmount)}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${Math.round(total.totalAmount)}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${total.totalAmount}</td><td></td>`
+                totalRow.innerHTML = `<td colspan="3">Total</td><td>${total.basicSalary}</td><td>${Math.round(total.daAmount)}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${Math.round(total.totalAmount)}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${total.totalAmount}</td><td>${total.basicSalary}</td><td>${total.daAmount}</td>${total.npaAmount !== undefined ? `<td>${total.npaAmount}</td>` : ``}${total.hraAmount !== undefined ? `<td>${total.hraAmount}</td>` : ``}${total.washingAmount !== undefined ? `<td>${total.washingAmount}</td>` : ``}${total.messAmount !== undefined ? `<td>${total.messAmount}</td>` : ``}${total.hdaAmount !== undefined ? `<td>${total.hdaAmount}</td>` : ``}${total.otherAmount !== undefined ? `<td>${total.otherAmount}</td>` : ``}<td>${total.totalAmount}</td><td></td>`
                 console.log(totalRow);
             }
             tableBodyData.appendChild(totalRow);
