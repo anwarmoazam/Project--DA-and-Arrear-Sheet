@@ -46,10 +46,12 @@ const dataModule = (function () {
     function getHraRate(date) {
         let hraRate = 0;
         date = new Date(date);
-        if (date >= new Date(2021, 6, 1)) {
-            hraRate = 9;
-        } else {
+        if (date >= new Date(2017, 9, 1) && date <= new Date(2021, 6, 1)) {
             hraRate = 8;
+        } else if(date >= new Date(2021, 6, 1)) {
+            hraRate = 9;
+        } else{
+            hraRate = 0
         }
         return hraRate;
     }
@@ -197,36 +199,7 @@ const dataModule = (function () {
             localStorage.setItem('data', JSON.stringify(data));
         },
         updateData: function (obj) {
-
-            const savedObj = this.getData();
-            // const basicSalaryPerDay = (obj.basicSalary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
-            const basicSalaryPerDay = (data.salary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
-            const date = obj.year + "," + obj.month + "," + 1;
-            obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
-            obj.hraAmount !== undefined ? obj.hraAmount = Math.round((obj.basicSalary * getHraRate(date)) / 100) : 0;
-            obj.npaAmount !== undefined ? obj.npaAmount = Math.round(obj.basicSalary * npaRate / 100) : 0;
-            console.log(obj.npaAmount);
-            obj.washingAmount !== undefined ? obj.washingAmount = Math.round((150 / getDaysInMonth(obj.month, obj.year)) * obj.days) : 0;
-            obj.messAmount !== undefined && obj.messAmount === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : obj.messAmount !== undefined && obj.messAmount === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : obj.messAmount !== undefined && obj.messAmount === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
-            obj.hdaAmount !== undefined ? obj.hdaAmount = 200 : 0;
-            obj.other !== undefined ? obj.otherAmount = 0 : 0;
-            obj.npaAmount !== undefined ? obj.daAmount = (obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100 : obj.daAmount = obj.basicSalary * getDaRate(date) / 100;
-            console.log('da amount : ', obj.daAmount);
-            obj.totalAmount = obj.basicSalary + obj.daAmount + (obj.hraAmount || 0) + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0) + (obj.otherAmount || 0);
-            return obj;
-
-            // const npaAmountPerDay = (obj.basicSalary * npaRate / 100) / (getDaysInMonth(obj.month, obj.year));
-            // const washingAmountPerDay = 150 / (getDaysInMonth(obj.month, obj.year));
-            // const date = obj.year + "," + obj.month + "," + 1;
-            // // let surrender = {};
-            // obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
-            // savedObj.npaAllowance === 'yes' ? obj.npaAmount = Math.round(npaAmountPerDay * obj.days) : 0;
-            // savedObj.washingAllowance === 'yes' ? obj.washingAmount = Math.round(washingAmountPerDay * obj.days) : 0;
-            // savedObj.messAllowance === '1200-1320' ? obj.messAmount = getMessAllowance(obj, 1200, 1320) : savedObj.messAllowance === '800-880' ? obj.messAmount = getMessAllowance(obj, 800, 880) : savedObj.messAllowance === '250-275' ? obj.messAmount = getMessAllowance(obj, 250, 275) : 0;
-            // savedObj.hardDutyAllowance == 'yes' ? obj.hdaAmount = 200 : 0;
-
-            // obj.totalAmount = obj.basicSalary + (obj.npaAmount || 0) + (obj.washingAmount || 0) + (obj.messAmount || 0) + (obj.hdaAmount || 0);
-            // savedObj.npaAllowance === 'yes' ? obj.daAmount = Math.round((obj.basicSalary + obj.npaAmount) * getDaRate(date) / 100) : obj.daAmount = Math.round(obj.basicSalary * getDaRate(date) / 100);
+            return calculateData(obj);
         }
     }
 })();
@@ -264,7 +237,7 @@ const uiModule = (function () {
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
         */
         return `<tr><th ${keys.length === 9 ? `colspan="31"` : keys.length === 8 ? `colspan="28"` : keys.length === 7 ? `colspan="25"` : keys.length === 6 ? `colspan="22"` : keys.length === 5 ? `colspan="19"` : keys.length === 4 ? `colspan="16"` : keys.length === 3 ? `colspan="13"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
-        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Difference Amount</th><th rowspan="2">Actions</th></tr>
+        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn (As per GA55)</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Difference Amount</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
 
         /*
@@ -326,7 +299,7 @@ const uiModule = (function () {
                     <td></td>
                     ${entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
                     ${entry.totalSurrenderAmount !== undefined ? '' : `<td>${entry.days}</td>`}
-                    <td><input type="number" placeholder=${entry.basicSalary} class="salary"></td>
+                    <td><input type="number" placeholder=${entry.basicSalary} class="salary-auto"></td>
                     <td>${entry.daAmount}</td>
                     ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
                     ${entry.hraAmount !== undefined ? `<td>${entry.hraAmount}</td>` : ``}
@@ -336,7 +309,7 @@ const uiModule = (function () {
                     ${entry.otherAmount !== undefined ? `<td><input type="number" placeholder=${entry.otherAmount} class="other-amount"></td>` : ``}
                     <td>${entry.totalAmount !== undefined ? entry.totalAmount : entry.totalSurrenderAmount}</td>
 
-                    <td><input type="number" placeholder=${entry.basicSalary}></td>
+                    <td><input type="number" placeholder=${entry.basicSalary} class="salary-ga55"></td>
                     <td><input type="number" placeholder=${entry.daAmount}></td>
                     ${entry.npaAmount !== undefined ? `<td><input type="number" placeholder=${entry.npaAmount}></td>` : ''}
                     ${entry.hraAmount !== undefined ? `<td><input type="number" placeholder=${entry.hraAmount}></td>` : ``}
@@ -427,7 +400,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
         }
     });
     document.querySelector('tbody').addEventListener('change', function (event) {
-        if (event.target.classList.contains('salary')) {
+        if (event.target.classList.contains('salary-auto')) {
             const row = event.target.parentElement.parentElement;
             const index = Array.from(row.parentElement.children).indexOf(row);
             const data = dataCtrl.getData();
@@ -461,7 +434,7 @@ const appModule = (function (dataCtrl, uiCtrl) {
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
         }
-    })
+    });
 })(dataModule, uiModule);
 
 function getMessAllowance(obj, oldAmt, newAmt) {
