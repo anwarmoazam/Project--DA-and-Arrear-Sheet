@@ -48,9 +48,9 @@ const dataModule = (function () {
         date = new Date(date);
         if (date >= new Date(2017, 9, 1) && date <= new Date(2021, 6, 1)) {
             hraRate = 8;
-        } else if(date >= new Date(2021, 6, 1)) {
+        } else if (date >= new Date(2021, 6, 1)) {
             hraRate = 9;
-        } else{
+        } else {
             hraRate = 0
         }
         return hraRate;
@@ -122,7 +122,7 @@ const dataModule = (function () {
     }
 
     function calculateData(obj) {
-        const basicSalaryPerDay = (data.salary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
+        const basicSalaryPerDay = obj.type ? (data.ga55Salary / getDaysInMonth(obj.month, obj.year)).toFixed(2) : (data.salary / getDaysInMonth(obj.month, obj.year)).toFixed(2);
         const date = obj.year + "," + obj.month + "," + 1;
         obj.basicSalary = Math.round(basicSalaryPerDay * obj.days);
         obj.hraAmount !== undefined ? obj.hraAmount = Math.round((obj.basicSalary * getHraRate(date)) / 100) : 0;
@@ -155,7 +155,7 @@ const dataModule = (function () {
             data.toDate = toDate;
             data.salary = salary;
             data.arear = {};
-            let toBePaid = [], alreadyPaid = [], difference=[];
+            let toBePaid = [], alreadyPaid = [], difference = [];
 
             totalData.forEach((month, index) => {
                 month.month === 7 && index !== 0 ? data.salary = Math.round((data.salary + (data.salary * 3 / 100)) / 100) * 100 : data.salary;
@@ -182,11 +182,13 @@ const dataModule = (function () {
                     alreadyPaid.push(surrender);
                 }
             })
-
             data.arear.alreadyPaid = alreadyPaid;
-            toBePaid = [...alreadyPaid];
+            toBePaid = structuredClone(alreadyPaid);
+            for(let i=0; i<toBePaid.length; i++){
+                toBePaid[i].type = 'To be paid';
+            }
             data.arear.toBePaid = toBePaid;
-            difference = [...alreadyPaid];
+            difference = structuredClone(alreadyPaid);
             data.arear.difference = difference;
             localStorage.setItem('data', JSON.stringify(data));
             return data;
@@ -229,15 +231,19 @@ const uiModule = (function () {
 
     function createHeading(headingValue) {
         const keys = Object.keys(headingValue.arear.alreadyPaid[0]);
-        keys.splice(0, 4)
+        keys.splice(0, 4);
+        let fromDate = new Date(headingValue.fromDate);
+        let toDate = new Date(headingValue.toDate);
+        fromDate = `${fromDate.getDate() < 10 ? `0${fromDate.getDate()}` : fromDate.getDate()}-${fromDate.getMonth() < 10 ? `0${fromDate.getMonth() + 1}` : fromDate.getMonth() + 1}-${fromDate.getFullYear()}`;
+        toDate = `${toDate.getDate() < 10 ? `0${toDate.getDate()}` : toDate.getDate()}-${toDate.getMonth() < 10 ? `0${toDate.getMonth() + 1}` : toDate.getMonth() + 1}-${toDate.getFullYear()}`;
         console.log(keys);
         /*
         return `<tr><th ${keys.length === 9 ? `colspan="22"` : keys.length === 8 ? `colspan="20"` : keys.length === 7 ? `colspan="18"` : keys.length === 6 ? `colspan="16"` : keys.length === 5 ? `colspan="14"` : keys.length === 4 ? `colspan="12"` : keys.length === 3 ? `colspan="10"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
         <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
         */
-        return `<tr><th ${keys.length === 9 ? `colspan="31"` : keys.length === 8 ? `colspan="28"` : keys.length === 7 ? `colspan="25"` : keys.length === 6 ? `colspan="22"` : keys.length === 5 ? `colspan="19"` : keys.length === 4 ? `colspan="16"` : keys.length === 3 ? `colspan="13"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}</th></tr>
-        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn (As per GA55)</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Difference Amount</th><th rowspan="2">Actions</th></tr>
+        return `<tr><th ${keys.length === 9 ? `colspan="31"` : keys.length === 8 ? `colspan="28"` : keys.length === 7 ? `colspan="25"` : keys.length === 6 ? `colspan="22"` : keys.length === 5 ? `colspan="19"` : keys.length === 4 ? `colspan="16"` : keys.length === 3 ? `colspan="13"` : ``}>Employee Name : ${headingValue.name} &emsp; | &emsp; Designation : ${headingValue.designation} &emsp; | &emsp; Employee ID : ${headingValue.empId} &emsp; | &emsp; Employee PAN No. : ${headingValue.empPan}  &emsp; | &emsp; Arear From : ${fromDate} to ${toDate}</th></tr>
+        <tr><th rowspan="2">S.No.</th><th rowspan="2">Month / Year</th><th rowspan="2">Days</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay to be Drawn</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Pay Already Drawn (As per GA 55)</th><th ${keys.length === 9 ? `colspan="9"` : keys.length === 8 ? `colspan="8"` : keys.length === 7 ? `colspan="7"` : keys.length === 6 ? `colspan="6"` : keys.length === 5 ? `colspan="5"` : keys.length === 4 ? `colspan="4"` : keys.length === 3 ? `colspan="3"` : ``}>Difference Amount</th><th rowspan="2">Actions</th></tr>
         <tr><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ``} ${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``} ${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``} ${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th><th>Basic Salary</th><th>DA Amount</th>${headingValue.npaAllowance === 'yes' ? `<th>NPA Amount</th>` : ''}${headingValue.houseRentAllowance === 'yes' ? `<th>HRA Amount</th>` : ``}${headingValue.washingAllowance === 'yes' ? `<th>Washing Allowance Amount</th>` : ``}${headingValue.messAllowance !== '0' ? `<th>Mess Amount</th>` : ``}${headingValue.hardDutyAllowance === 'yes' ? `<th>HDA Amount</th>` : ``}${headingValue.other === 'yes' ? `<th>Other Amount</th>` : ``}<th>Total Amount</th></tr>`;
 
         /*
@@ -292,6 +298,7 @@ const uiModule = (function () {
             };
         },
         addRow: function (entry, index) {
+            console.log(entry);
             table.innerHTML = "";
             const row = document.createElement('tr');
             row.id = `row-${index}`;
@@ -299,6 +306,7 @@ const uiModule = (function () {
                     <td></td>
                     ${entry.totalSurrenderAmount !== undefined ? `<td style="background-color : yellow" colspan="2">Surrender</td>` : `<td class="month-year">${monthsName[entry.month]} / ${entry.year}</td>`} 
                     ${entry.totalSurrenderAmount !== undefined ? '' : `<td>${entry.days}</td>`}
+
                     <td><input type="number" placeholder=${entry.basicSalary} class="salary-auto"></td>
                     <td>${entry.daAmount}</td>
                     ${entry.npaAmount !== undefined ? `<td>${entry.npaAmount}</td>` : ``}
@@ -347,7 +355,8 @@ const uiModule = (function () {
             (Object.keys(data).length !== 0) ? heading = createHeading(data) : '';
             tableHeadData.innerHTML = heading;
             if (Object.keys(data).length !== 0) {
-                data.arear.alreadyPaid.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = data.arear.alreadyPaid.forEach((item, index) => {
                     this.addRow(item, index);
                 });
                 const total = createTotal(data);
@@ -416,12 +425,42 @@ const appModule = (function (dataCtrl, uiCtrl) {
                     dataCtrl.updateData(data.arear.alreadyPaid[i]);
                 }
                 if (data.arear.alreadyPaid[i].month === 7 && i !== index) {
-                    data.salary += Math.round((data.salary * 3 / 100) / 100) * 100;
+                    data.salary = Math.round((data.salary + (data.salary * 3 / 100)) / 100) * 100;
                     dataCtrl.updateData(data.arear.alreadyPaid[i]);
                 }
             }
             localStorage.setItem('data', JSON.stringify(data));
             uiCtrl.populateTable();
+        }
+        if (event.target.classList.contains('salary-ga55')) {
+            const row = event.target.parentElement.parentElement;
+            const index = Array.from(row.parentElement.children).indexOf(row);
+            const ga55Data = structuredClone(dataCtrl.getData());
+            const data = dataCtrl.getData();
+            let newSalary = Number(event.target.value);
+            data.ga55Salary = newSalary;
+            const _toBePaid = structuredClone(ga55Data.arear.toBePaid);
+            delete ga55Data.arear.toBePaid;
+            ga55Data.ga55Salary = newSalary;
+            console.log(_toBePaid);
+            console.log(row, index, ga55Data);
+            for (let i = index; i < _toBePaid.length; i++) {
+                console.log(_toBePaid[i], index, newSalary);
+                if (_toBePaid[i].totalSurrenderAmount === undefined) {
+                    _toBePaid[i].basicSalary = newSalary;
+                    dataCtrl.updateData(_toBePaid[i]);
+                }
+                if (_toBePaid[i].month === 7 && i !== index) {
+                    newSalary = Math.round((newSalary + (newSalary * 3 / 100)) / 100) * 100;
+                    ga55Data.ga55Salary = newSalary;
+                    _toBePaid[i].basicSalary = newSalary;
+                    dataCtrl.updateData(_toBePaid[i]);
+                }
+            }
+            console.log(_toBePaid);
+            ga55Data.arear.toBePaid = structuredClone(_toBePaid);
+            localStorage.setItem('data', JSON.stringify(ga55Data));
+            uiCtrl.populateTable();                        
         }
         if (event.target.classList.contains('other-amount')) {
             const row = event.target.parentElement.parentElement;
