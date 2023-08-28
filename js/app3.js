@@ -208,7 +208,6 @@ const dataModule = (function () {
                     }
                 }
             }
-            console.log(difference);
             data.arear.difference = difference;
             localStorage.setItem('data', JSON.stringify(data));
             return data;
@@ -395,7 +394,6 @@ const appModule = (function (dataCtrl, uiCtrl) {
                 if (data.arear.alreadyPaid[i].totalSurrenderAmount === undefined) {
                     data.arear.alreadyPaid[i].basicSalary = newSalary;
                     // data.arear.toBePaid[i].basicSalary = newSalary;
-
                     dataCtrl.updateData({ alreadyPaid: data.arear.alreadyPaid[i], toBePaid: data.arear.toBePaid[i], difference: data.arear.difference[i] }, "alreadyPaid");
                 }
                 if (data.arear.alreadyPaid[i].month === 7 && i !== index) {
@@ -419,13 +417,13 @@ const appModule = (function (dataCtrl, uiCtrl) {
             ga55Data.ga55Salary = newSalary;
             for (let i = index; i < _toBePaid.length; i++) {
                 if (_toBePaid[i].totalSurrenderAmount === undefined) {
-                    _toBePaid[i].basicSalary = newSalary;
+                    _toBePaid[i].basicSalary = ga55Data.ga55Salary;
                     dataCtrl.updateData({ alreadyPaid: ga55Data.arear.alreadyPaid[i], toBePaid: _toBePaid[i], difference: ga55Data.arear.difference[i] }, "toBePaid");
                 }
                 if (_toBePaid[i].month === 7 && i !== index) {
                     newSalary = Math.round((newSalary + (newSalary * 3 / 100)) / 100) * 100;
                     ga55Data.ga55Salary = newSalary;
-                    _toBePaid[i].basicSalary = newSalary;
+                    _toBePaid[i].basicSalary = ga55Data.ga55Salary;
                     dataCtrl.updateData({ alreadyPaid: ga55Data.arear.alreadyPaid[i], toBePaid: _toBePaid[i], difference: ga55Data.arear.difference[i] }, "toBePaid");
                 }
             }
