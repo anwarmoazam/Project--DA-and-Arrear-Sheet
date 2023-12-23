@@ -255,36 +255,3 @@ function daysRemainingInMonth(date) {
     return endDate.getDate() - (date.getDate() - 1);
 }
 
-
-/*
-let obj = {
-    name : 'Anwar Moazam',
-    designation : 'Data Entry Operator',
-    empId : 'PALAM14456',
-    fromDate : 'dateFrom',
-    toDate : 'toDate',
-    npa : 'yes',
-    washing : 'yes',
-    arear : {
-        paid : [{
-            month : 'January/2017',
-            days : 29,
-            basicAmt : 25000,
-            npaAmt : 1000,
-            washingAmt : 100,
-            daAmt : 5000,
-            totalAmt : 30000
-        }],
-        toBePaid : [{
-            month : 'January/2017',
-            days : 29,
-            basicAmt : 25000,
-            npaAmt : 1000,
-            washingAmt : 100,
-            daAmt : 5000,
-            totalAmt : 30000
-        }]
-    }
-}
-*/
-
